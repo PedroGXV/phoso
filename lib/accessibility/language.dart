@@ -1,6 +1,7 @@
 // THIS FILE IS UNDER DEVELOPMENT (it will be added to main app with 0.3beta release)
 
 class Language {
+  // default as english
   static String langSelected = 'en';
 
   final _lang = {
