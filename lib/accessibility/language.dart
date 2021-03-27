@@ -1,9 +1,9 @@
-// this file is under development, it will be added to main app with 0.3beta release
+// THIS FILE IS UNDER DEVELOPMENT (it will be added to main app with 0.3beta release)
 
 class Language {
   static String langSelected = 'en';
 
-  static final lang = {
+  final _lang = {
     'pt-br': [
       {
         'None playlist created!': 'Nenhuma playlist criada!',
@@ -17,6 +17,7 @@ class Language {
   };
 
   void getPhrase(String target) {
-    return lang[target];
+    // TODO: implement a return to get lang phrases
+    return null;
   }
 }
