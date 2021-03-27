@@ -12,15 +12,18 @@ Android Version: 4.1 (SDK 16)
 
 ## Version
 
-Current: 0.2-beta
-Working: 0.3-beta
+Current: 0.2beta
+Working: 0.3beta
 
 ## Patches
 
-**0.3-beta:**
+
+---
+**0.3beta**
 
 - Multi-language support (English / Portuguese-BR)
 - New dashboard layout (from bottom navbar to top navbar, and added menu slider)
+---
 
 ## Targets:
 
