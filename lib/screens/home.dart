@@ -1,10 +1,11 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:phoso/components/custom_fab.dart';
 import 'package:phoso/components/loading.dart';
 import 'package:phoso/models/hex_color.dart';
 import 'package:phoso/screens/deleting.dart';
-
+import 'package:phoso/screens/settings.dart';
 import '../main.dart';
 import 'file:///C:/Users/Usuario/Documents/Programacao/flutter/code/phoso/lib/screens/form_playlist.dart';
 import 'package:phoso/database/app_database.dart';
@@ -16,7 +17,7 @@ class Home extends StatefulWidget {
   _HomeState createState() => _HomeState();
 }
 
-class _HomeState extends State<Home> {
+class _HomeState extends State<Home> with TickerProviderStateMixin {
   bool _deleting = false;
 
   @override
@@ -28,28 +29,29 @@ class _HomeState extends State<Home> {
     return Scaffold(
       backgroundColor: (PhosoApp.darkMode) ? Colors.black : Colors.white,
       appBar: AppBar(
-        toolbarHeight: 0,
+        leading: Icon(Icons.home_outlined),
+        title: Text('Home'),
       ),
       body: _buildListView(),
-      bottomNavigationBar: Container(
-        height: 65,
-        decoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-              color: (PhosoApp.darkMode) ? Colors.black : Colors.white,
-              blurRadius: 15,
-              spreadRadius: 20,
-            ),
-          ],
-        ),
-        child: (PhosoApp.editCard)
-            ? BottomAppBar(
+      bottomNavigationBar: (PhosoApp.editCard)
+          ? Container(
+              height: 65,
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    color: (PhosoApp.darkMode) ? Colors.black : Colors.white,
+                    blurRadius: 15,
+                    spreadRadius: 20,
+                  ),
+                ],
+              ),
+              child: BottomAppBar(
                 color: Colors.white,
                 child: Container(
-                  margin: EdgeInsets.fromLTRB(15, 0, 15, 0),
+                  margin: EdgeInsets.only(left: 15, right: 15),
                   child: Row(
                     children: [
-                      new Material(
+                      Material(
                         color: Colors.transparent,
                         child: InkWell(
                           onTap: () async {
@@ -68,7 +70,7 @@ class _HomeState extends State<Home> {
                             }
                           },
                           child: Padding(
-                            padding: const EdgeInsets.all(6.0),
+                            padding: EdgeInsets.all(6.0),
                             child: Container(
                               height: double.maxFinite,
                               margin: EdgeInsets.only(right: 8.0),
@@ -113,38 +115,10 @@ class _HomeState extends State<Home> {
                     ],
                   ),
                 ),
-              )
-            : BottomAppBar(
-                color: Colors.deepPurple,
-                child: Container(
-                  margin: EdgeInsets.all(10),
-                  child: Row(
-                    children: [
-                      _buildIconButton(
-                        (PhosoApp.darkMode)
-                            ? Icons.wb_sunny_outlined
-                            : Icons.nights_stay_outlined,
-                        () {
-                          setState(() {
-                            PhosoApp.darkMode = !PhosoApp.darkMode;
-                          });
-                        },
-                      ),
-                      Spacer(),
-                      _buildIconButton(
-                        Icons.edit_outlined,
-                        () {
-                          setState(() {
-                            PhosoApp.editCard = true;
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-                ),
               ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+            )
+          : null,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: (PhosoApp.editCard) ? null : _buildFab(),
     );
   }
@@ -255,35 +229,76 @@ class _HomeState extends State<Home> {
     );
   }
 
-  Widget _buildFab() {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.all(
-          Radius.circular(100),
-        ),
-        boxShadow: [
-          BoxShadow(
-            spreadRadius: 2,
-            color: (PhosoApp.darkMode) ? Colors.white : Colors.black,
-          ),
-        ],
-      ),
-      child: FloatingActionButton(
-        elevation: 30,
-        onPressed: () async {
-          await Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (BuildContext context) => PathPick(),
-            ),
-          );
+  bool _fabOpen = false;
 
-          setState(() {});
-        },
-        child: Icon(
-          Icons.add,
-          color: (PhosoApp.darkMode) ? Colors.white : Colors.black,
+  void _toggleFab() {
+    setState(() {
+      _fabOpen = !_fabOpen;
+    });
+  }
+
+  Widget _buildFab() {
+    return SizedBox.expand(
+      child: Container(
+        margin: EdgeInsets.all(10),
+        child: Stack(
+          alignment: Alignment.bottomRight,
+          clipBehavior: Clip.none,
+          children: [
+            CustomFab(
+              icon: (_fabOpen) ? Icons.close : Icons.more_vert_rounded,
+              color: (_fabOpen) ? Colors.redAccent : null,
+              iconColor: (_fabOpen) ? Colors.white : null,
+              onPressed: () => _toggleFab(),
+            ),
+            Visibility(
+              visible: _fabOpen,
+              child: Container(
+                margin: EdgeInsets.only(bottom: 75),
+                child: CustomFab(
+                  icon: Icons.add,
+                  onPressed: () async {
+                    await Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (BuildContext context) => PathPick(),
+                      ),
+                    );
+
+                    setState(() {});
+                  },
+                ),
+              ),
+            ),
+            Visibility(
+              visible: _fabOpen,
+              child: Container(
+                margin: EdgeInsets.only(bottom: 150),
+                child: CustomFab(
+                  icon: Icons.edit_outlined,
+                  onPressed: () async {
+                    setState(() {
+                      PhosoApp.editCard = true;
+                    });
+                  },
+                ),
+              ),
+            ),
+            Visibility(
+              visible: _fabOpen,
+              child: Container(
+                margin: EdgeInsets.only(bottom: 225),
+                child: CustomFab(
+                  icon: Icons.settings,
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (context) => Settings()),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
         ),
-        backgroundColor: (PhosoApp.darkMode) ? Colors.black : Colors.white,
       ),
     );
   }

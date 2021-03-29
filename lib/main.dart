@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:phoso/screens/home.dart';
 import 'models/hex_color.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 void main() {
   runApp(
@@ -20,6 +22,8 @@ class PhosoApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    initPrefs();
+
     return MaterialApp(
       theme: ThemeData(
         accentColor: HexColor.fromHex("#FF8067D0"),
@@ -29,5 +33,18 @@ class PhosoApp extends StatelessWidget {
       ),
       home: Home(),
     );
+  }
+
+  void initPrefs() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    if (prefs.getBool('darkMode') != null) {
+      darkMode = prefs.getBool('darkMode');
+    } else {
+      prefs.setBool('darkMode', darkMode);
+    }
+    
+    print(prefs.getBool('darkMode'));
+    
   }
 }

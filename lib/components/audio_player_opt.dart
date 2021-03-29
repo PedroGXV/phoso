@@ -2,7 +2,6 @@ import 'package:audioplayers/audio_cache.dart';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:phoso/main.dart';
-import 'package:phoso/models/photo_sound.dart';
 
 enum PlayerState { stopped, playing, paused }
 
@@ -50,20 +49,26 @@ class _AudioPlayerOptState extends State<AudioPlayerOpt> {
   });
 
   Future playLocal() async {
-    await _audioPlayer.play(soundSrc, isLocal: true);
+    await _audioPlayer.play(
+      soundSrc,
+      isLocal: true,
+      stayAwake: true,
+    );
     setState(() => playerState = PlayerState.playing);
   }
 
   Future pause() async {
     await _audioPlayer.pause();
-    setState(() => playerState = PlayerState.paused);
+    setState(() {
+      playerState = PlayerState.paused;
+    });
   }
 
   Future stop() async {
     await _audioPlayer.stop();
     setState(() {
       playerState = PlayerState.stopped;
-      position = Duration();
+      _audioPlayer.seek(Duration(seconds: 0));
     });
   }
 
@@ -71,6 +76,7 @@ class _AudioPlayerOptState extends State<AudioPlayerOpt> {
     await _audioPlayer.setUrl(
       url,
       isLocal: true,
+      respectSilence: true,
     );
   }
 
@@ -81,19 +87,16 @@ class _AudioPlayerOptState extends State<AudioPlayerOpt> {
     _audioPlayer = new AudioPlayer();
     cache = AudioCache(fixedPlayer: _audioPlayer);
 
-    // handling the duration
-    _audioPlayer.durationHandler = (d) {
-      setState(() {
-        musicLength = d;
-      });
-    };
+    _audioPlayer.onDurationChanged.listen((Duration d) {
+      print('Max duration: $d');
+      setState(() => musicLength = d);
+    });
 
-    // this function allow us to move the slider
-    _audioPlayer.positionHandler = (p) {
+    _audioPlayer.onAudioPositionChanged.listen((Duration p) {
       setState(() {
         position = p;
       });
-    };
+    });
 
     // load the song to make the playing faster
     cache.load(soundSrc);
@@ -102,6 +105,7 @@ class _AudioPlayerOptState extends State<AudioPlayerOpt> {
   @override
   Widget build(BuildContext context) {
     setUrl(soundSrc);
+
     return Material(
       color: (PhosoApp.darkMode) ? Colors.black : Colors.white,
       child: InkWell(
@@ -164,11 +168,13 @@ class _AudioPlayerOptState extends State<AudioPlayerOpt> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    _buildTimeText(
-                        position.inMinutes, position.inSeconds.remainder(60)),
+                    _buildTimeText('${position.inMinutes}',
+                        '${position.inSeconds.remainder(60)}'),
                     slider(),
-                    _buildTimeText(musicLength.inMinutes, getSec()),
+                    _buildTimeText('${musicLength.inMinutes}',
+                        '${musicLength.inSeconds.remainder(60)}'),
                   ],
                 ),
               ),
@@ -180,10 +186,10 @@ class _AudioPlayerOptState extends State<AudioPlayerOpt> {
   }
 
   String getSec() {
-    if (musicLength.inSeconds.toString().length >= 3) {
-      return musicLength.inSeconds.toString().substring(0, 2);
+    if (musicLength.toString().length >= 3) {
+      return musicLength.toString().substring(0, 2);
     }
-    return musicLength.inSeconds.toString();
+    return musicLength.toString();
   }
 
   Widget _buildTimeText(firstTime, secondTime) {
@@ -213,26 +219,25 @@ class _AudioPlayerOptState extends State<AudioPlayerOpt> {
   }
 
   Widget slider() {
-    return Container(
-      width: 250,
-      child: Slider.adaptive(
-        activeColor: Colors.deepPurple,
-        inactiveColor: (PhosoApp.darkMode) ? Colors.white60 : Colors.black26,
-        value: position.inSeconds.toDouble(),
-        min: 0,
-        max: musicLength.inSeconds.toDouble(),
-        onChanged: (value) {
-          seekToSec(value.toInt());
-        },
-      ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Slider.adaptive(
+          activeColor: Colors.deepPurple,
+          inactiveColor: (PhosoApp.darkMode) ? Colors.white60 : Colors.black26,
+          value: position.inSeconds.toDouble(),
+          min: 0,
+          max: musicLength.inSeconds.toDouble(),
+          onChanged: (value) async {
+            seekToSec(value.toInt());
+          },
+        ),
+      ],
     );
   }
 
   void seekToSec(int sec) {
     Duration newPos = new Duration(seconds: sec);
-    setState(() {
-      position = new Duration(seconds: sec);
-    });
     _audioPlayer.seek(newPos);
   }
 

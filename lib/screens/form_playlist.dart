@@ -21,7 +21,6 @@ class _PathPickState extends State<PathPick> {
 
   TextEditingController _playlistName = new TextEditingController();
 
-  PickedFile _pickedImage;
   ImagePicker _picker;
   String _imagePath;
 

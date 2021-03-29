@@ -83,7 +83,7 @@ class _DeletingState extends State<Deleting> {
     );
   }
 
-  Future<Widget> _setDelete() async {
+  Future<void> _setDelete() async {
     setState(() {
       _deleting = true;
     });
