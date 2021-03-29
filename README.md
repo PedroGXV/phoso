@@ -13,7 +13,6 @@ Android Version: 4.1 (SDK 16)
 ## Version
 
 **Current: 0.3.0**
-**Next: 0.4.0**
 
 ## Patches
 
@@ -25,7 +24,7 @@ Android Version: 4.1 (SDK 16)
 - Added Shared Preferences for Dark Mode selection
 - Support to Android SDK 16
 ---
-**Goals***
+**Goals**
 
 - Multi-language support (English / Portuguese-BR)
 ---
