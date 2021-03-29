@@ -12,17 +12,22 @@ Android Version: 4.1 (SDK 16)
 
 ## Version
 
-Current: 0.2beta
-Working: 0.3beta
+Current: 0.3.0
+Next: 0.4.0
 
 ## Patches
 
-
 ---
-**0.3beta**
+**0.3.0**
+
+- New dashboard layout (multiples floating buttons)
+- New 'Settings' screen
+- Added Shared Preferences for Dark Mode selection
+- Support to Android SDK 16
+---
+**Goals***
 
 - Multi-language support (English / Portuguese-BR)
-- New dashboard layout (from bottom navbar to top navbar, and added menu slider)
 ---
 
 ## Targets:
