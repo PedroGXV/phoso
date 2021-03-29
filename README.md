@@ -12,8 +12,8 @@ Android Version: 4.1 (SDK 16)
 
 ## Version
 
-> Current: 0.3.0
-> Next: 0.4.0
+**Current: 0.3.0**
+**Next: 0.4.0**
 
 ## Patches
 
