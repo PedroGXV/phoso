@@ -35,7 +35,7 @@ Lower Versions: Download and use the debug version
 **Goals**
 
 - Multi-language support (English / Portuguese-BR)
-- Better theme managment
+- Better theme managment (with Theme Notifier)
 ---
 
 ## Targets:
