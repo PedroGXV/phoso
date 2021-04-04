@@ -18,19 +18,19 @@ Lower Versions: Download and use the debug version
 ## Patches
 
 ---
-**0.3.0**
-
-- New home layout (multiples floating buttons)
-- New 'Settings' screen
-- Added Shared Preferences for Dark Mode selection
-- Support to Android SDK 16
----
 **0.3.1**
 
 - New home layout, transformed Grid layout to Vertical ListView
 - Changed Audio Player Buttons Layout (from Middle to Bottom)
 - Removed debug banner to improve people who will use it with older versions (like Android 4.1)
 ---
+**0.3.0**
+
+- New home layout (multiples floating buttons)
+- New 'Settings' screen
+- Added Shared Preferences for Dark Mode selection
+- Support to Android SDK 16
+
 
 **Goals**
 
