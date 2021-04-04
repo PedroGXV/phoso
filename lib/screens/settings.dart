@@ -15,31 +15,40 @@ class _SettingsState extends State<Settings> {
       appBar: AppBar(
         title: Text('Settings'),
       ),
-      body: ListView(
-        children: [
-          _buildList(
-            icon: (PhosoApp.darkMode)
-                ? Icons.nightlight_round
-                : Icons.wb_sunny_outlined,
-            listTitle: 'Tema',
-            listSubtitle: (PhosoApp.darkMode) ? 'Escuro' : 'Claro',
-            onTap: () async {
-              await setState(() {
-                PhosoApp.darkMode = !PhosoApp.darkMode;
-              });
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: ListView(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: _buildList(
+                icon: (PhosoApp.darkMode)
+                    ? Icons.nightlight_round
+                    : Icons.wb_sunny_outlined,
+                listTitle: 'Tema',
+                listSubtitle: (PhosoApp.darkMode) ? 'Escuro' : 'Claro',
+                onTap: () async {
+                  await setState(() {
+                    PhosoApp.darkMode = !PhosoApp.darkMode;
+                  });
 
-              SharedPreferences prefs = await initPrefs();
-              prefs.setBool('darkMode', PhosoApp.darkMode);
-              print(prefs.getBool('darkMode'));
-            },
-          ),
-          _buildList(
-            icon: Icons.info_outline_rounded,
-            listTitle: 'Version',
-            listSubtitle: '0.3.1',
-            onTap: () {},
-          ),
-        ],
+                  SharedPreferences prefs = await initPrefs();
+                  prefs.setBool('darkMode', PhosoApp.darkMode);
+                  print(prefs.getBool('darkMode'));
+                },
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: _buildList(
+                icon: Icons.info_outline_rounded,
+                listTitle: 'Version',
+                listSubtitle: '0.3.1',
+                onTap: () {},
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -63,6 +72,7 @@ class _SettingsState extends State<Settings> {
         },
         child: Container(
           decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: (PhosoApp.darkMode) ? Colors.white : Colors.black,
             ),
