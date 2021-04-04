@@ -31,7 +31,7 @@ Lower Versions: Download and use the debug version
 - Added Shared Preferences for Dark Mode selection
 - Support to Android SDK 16
 
-
+---
 **Goals**
 
 - Multi-language support (English / Portuguese-BR)
