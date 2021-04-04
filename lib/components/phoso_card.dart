@@ -28,7 +28,7 @@ class PhosoCard extends StatelessWidget {
       child: Container(
         height: 100,
         decoration: BoxDecoration(
-          // color: (PhosoApp.darkMode) ? Colors.white : Colors.black,
+          borderRadius: BorderRadius.circular(15),
           border: Border.all(
             color: (PhosoApp.darkMode) ? Colors.white : HexColor.fromHex("#FF1A0926"),
             width: 3,
