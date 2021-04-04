@@ -23,6 +23,7 @@ Lower Versions: Download and use the debug version
 - New home layout, transformed Grid layout to Vertical ListView
 - Changed Audio Player Buttons Layout (from Middle to Bottom)
 - Removed debug banner to improve people who will use it with older versions (like Android 4.1)
+- Improved Settings layout (with paddings)
 ---
 **0.3.0**
 
