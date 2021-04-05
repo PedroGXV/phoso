@@ -67,6 +67,7 @@ class _SettingsState extends State<Settings> {
     return Material(
       color: Colors.transparent,
       child: InkWell(
+        borderRadius: BorderRadius.circular(12),
         onTap: () {
           onTap();
         },

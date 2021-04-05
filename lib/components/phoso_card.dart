@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:phoso/components/card_dialog.dart';
 import 'package:phoso/models/hex_color.dart';
 import 'package:phoso/models/photo_sound.dart';
 import 'package:phoso/screens/home.dart';
@@ -26,61 +27,59 @@ class PhosoCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 0, 5, 10),
       child: Container(
-        height: 100,
+        height: 70,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: (PhosoApp.darkMode) ? Colors.white : HexColor.fromHex("#FF1A0926"),
-            width: 3,
+            color: (PhosoApp.darkMode)
+                ? Colors.white
+                : HexColor.fromHex("#FF1A0926"),
+            width: 1.5,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey,
-              spreadRadius: 2,
-              blurRadius: 5,
-              offset: Offset(0, 2),
-            ),
-          ],
         ),
         child: Material(
+          borderRadius: BorderRadius.circular(12),
           color: bgColor,
           child: InkWell(
+            borderRadius: BorderRadius.circular(12),
             onTap: () {
               onTap();
             },
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Container(
-                  margin: EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                        color: Colors.black,
+                Row(
+                  children: [
+                    Container(
+                      margin: EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black,
+                            blurRadius: 5,
+                          ),
+                        ],
+                      ),
+                      child: Image.file(
+                        File(photoSound.photoSrc),
                       ),
                     ),
-                    boxShadow: <BoxShadow>[
-                      BoxShadow(
-                        color: Colors.grey,
-                        blurRadius: 90,
+                    Container(
+                      margin: EdgeInsets.only(left: 15),
+                      child: Text(
+                        photoSound.playlistName,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 20,
+                          color: reversedColor,
+                        ),
                       ),
-                    ],
-                  ),
-                  child: Image.file(
-                    File(photoSound.photoSrc),
-                  ),
+                    ),
+                  ],
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 8.0),
-                  child: Text(
-                    photoSound.playlistName,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 20,
-                      color: reversedColor,
-                    ),
-                  ),
+                CardDialog(
+                  photoSound: this.photoSound,
                 ),
               ],
             ),
@@ -91,22 +90,12 @@ class PhosoCard extends StatelessWidget {
   }
 
   void setColors() {
-    if (PhosoApp.editTarget == photoSound.id) {
-      if (PhosoApp.darkMode) {
-        bgColor = Colors.white;
-        reversedColor = Colors.black;
-      } else {
-        bgColor = Colors.black;
-        reversedColor = Colors.white;
-      }
+    if (PhosoApp.darkMode) {
+      bgColor = Colors.black;
+      reversedColor = Colors.white;
     } else {
-      if (PhosoApp.darkMode) {
-        bgColor = Colors.black;
-        reversedColor = Colors.white;
-      } else {
-        bgColor = Colors.white;
-        reversedColor = Colors.black;
-      }
+      bgColor = Colors.white;
+      reversedColor = Colors.black;
     }
   }
 }

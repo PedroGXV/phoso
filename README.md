@@ -18,6 +18,10 @@ Lower Versions: Download and use the debug version
 ## Patches
 
 ---
+**0.3.2**
+
+- New Home Card layout (smaller and circular border)
+---
 **0.3.1**
 
 - New home layout, transformed Grid layout to Vertical ListView

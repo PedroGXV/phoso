@@ -34,93 +34,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
         title: Text('Home'),
       ),
       body: _buildListView(),
-      bottomNavigationBar: (PhosoApp.editCard)
-          ? Container(
-              height: 65,
-              decoration: BoxDecoration(
-                boxShadow: [
-                  BoxShadow(
-                    color: (PhosoApp.darkMode) ? Colors.black : Colors.white,
-                    blurRadius: 15,
-                    spreadRadius: 20,
-                  ),
-                ],
-              ),
-              child: BottomAppBar(
-                color: Colors.white,
-                child: Container(
-                  margin: EdgeInsets.only(left: 15, right: 15),
-                  child: Row(
-                    children: [
-                      Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: () async {
-                            if (PhosoApp.editTarget != null) {
-                              await Navigator.of(context)
-                                  .push(
-                                    MaterialPageRoute(
-                                      builder: (context) => Deleting(
-                                          idTarget: PhosoApp.editTarget),
-                                    ),
-                                  )
-                                  .then((value) => setState(() {
-                                        PhosoApp.editCard = false;
-                                        PhosoApp.editTarget = null;
-                                      }));
-                            }
-                          },
-                          child: Padding(
-                            padding: EdgeInsets.all(6.0),
-                            child: Container(
-                              height: double.maxFinite,
-                              margin: EdgeInsets.only(right: 8.0),
-                              alignment: Alignment.center,
-                              child: (PhosoApp.editTarget == null)
-                                  ? Text(
-                                      'Selecione uma playlist',
-                                      style: TextStyle(
-                                        color: Colors.grey,
-                                        fontSize: 22,
-                                      ),
-                                    )
-                                  : Text(
-                                      'Excluir'.toUpperCase(),
-                                      style: TextStyle(
-                                        color: Colors.red,
-                                        fontSize: 20,
-                                        letterSpacing: 1.1,
-                                      ),
-                                    ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      Spacer(),
-                      Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: () {
-                            setState(() {
-                              PhosoApp.editCard = false;
-                              PhosoApp.editTarget = null;
-                            });
-                          },
-                          child: Container(
-                            height: double.maxFinite,
-                            padding: EdgeInsets.fromLTRB(15.0, 0, 15.0, 0),
-                            child: Icon(Icons.close),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            )
-          : null,
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      floatingActionButton: (PhosoApp.editCard) ? null : _buildFab(),
+      floatingActionButton: _buildFab(),
     );
   }
 
@@ -145,10 +60,6 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
               child: InkWell(
                 splashColor: Colors.transparent,
                 onTap: () {
-                  setState(() {
-                    PhosoApp.editCard = false;
-                    PhosoApp.editTarget = null;
-                  });
                 },
                 child: Container(
                   color: (PhosoApp.darkMode) ? Colors.black : Colors.white,
@@ -180,29 +91,16 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                             return PhosoCard(
                               photoSound: snapshot.data[index],
                               onTap: () {
-                                (PhosoApp.editCard)
-                                    ? setState(() {
-                                        if (PhosoApp.editTarget ==
-                                            snapshot.data[index].id) {
-                                          PhosoApp.editTarget = null;
-                                          PhosoApp.editCard = false;
-                                        } else {
-                                          PhosoApp.editTarget =
-                                              snapshot.data[index].id;
-                                        }
-                                      })
-                                    : Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                          builder: (context) => ViewPhoso(
-                                            playlistName: snapshot
-                                                .data[index].playlistName,
-                                            photoSrc:
-                                                snapshot.data[index].photoSrc,
-                                            soundSrc:
-                                                snapshot.data[index].soundSrc,
-                                          ),
-                                        ),
-                                      );
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => ViewPhoso(
+                                      playlistName:
+                                          snapshot.data[index].playlistName,
+                                      photoSrc: snapshot.data[index].photoSrc,
+                                      soundSrc: snapshot.data[index].soundSrc,
+                                    ),
+                                  ),
+                                );
                               },
                             );
                           },
@@ -261,20 +159,6 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
               visible: _fabOpen,
               child: Container(
                 margin: EdgeInsets.only(bottom: 150),
-                child: CustomFab(
-                  icon: Icons.edit_outlined,
-                  onPressed: () async {
-                    setState(() {
-                      PhosoApp.editCard = true;
-                    });
-                  },
-                ),
-              ),
-            ),
-            Visibility(
-              visible: _fabOpen,
-              child: Container(
-                margin: EdgeInsets.only(bottom: 225),
                 child: CustomFab(
                   icon: Icons.settings,
                   onPressed: () {
