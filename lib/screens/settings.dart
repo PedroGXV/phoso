@@ -43,7 +43,7 @@ class _SettingsState extends State<Settings> {
               child: _buildList(
                 icon: Icons.info_outline_rounded,
                 listTitle: 'Version',
-                listSubtitle: '0.3.1',
+                listSubtitle: '0.3.2',
                 onTap: () {},
               ),
             ),
