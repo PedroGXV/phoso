@@ -20,7 +20,10 @@ Lower Versions: Download and use the debug version
 ---
 **0.3.2**
 
-- New Home Card layout (smaller and circular border)
+- Changed the Home Cards layout
+- Improve Settings screen design
+- Added card options (easier to delete playlists)
+- Removed "Edit" FAB (floating action button)
 ---
 **0.3.1**
 
