@@ -17,8 +17,6 @@ class PhosoApp extends StatelessWidget {
 
   final String title;
   static bool darkMode = false;
-  static bool editCard = false;
-  static int editTarget;
 
   @override
   Widget build(BuildContext context) {

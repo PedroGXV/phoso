@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:phoso/components/card_dialog.dart';
 import 'package:phoso/models/hex_color.dart';
 import 'package:phoso/models/photo_sound.dart';
 import 'package:phoso/screens/home.dart';
@@ -13,7 +14,6 @@ class PhosoCard extends StatelessWidget {
 
   Color bgColor;
   Color reversedColor;
-  Color iconColor;
 
   PhosoCard({
     @required this.onTap,
@@ -78,23 +78,8 @@ class PhosoCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                Container(
-                  height: 50,
-                  width: 75,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(15, 0, 15, 0),
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: () {},
-                        child: Icon(
-                          Icons.settings,
-                          color: iconColor,
-                          size: 25,
-                        ),
-                      ),
-                    ),
-                  ),
+                CardDialog(
+                  photoSound: this.photoSound,
                 ),
               ],
             ),
@@ -105,28 +90,12 @@ class PhosoCard extends StatelessWidget {
   }
 
   void setColors() {
-    _darkModeColors();
-
-    if (PhosoApp.editTarget == photoSound.id) {
-      if (PhosoApp.darkMode) {
-        bgColor = Colors.white;
-        reversedColor = Colors.black;
-      } else {
-        bgColor = Colors.black;
-        reversedColor = Colors.white;
-      }
+    if (PhosoApp.darkMode) {
+      bgColor = Colors.black;
+      reversedColor = Colors.white;
     } else {
-      if (PhosoApp.darkMode) {
-        bgColor = Colors.black;
-        reversedColor = Colors.white;
-      } else {
-        bgColor = Colors.white;
-        reversedColor = Colors.black;
-      }
+      bgColor = Colors.white;
+      reversedColor = Colors.black;
     }
-  }
-
-  void _darkModeColors() {
-    iconColor = (PhosoApp.darkMode) ? Colors.white : Colors.black;
   }
 }
