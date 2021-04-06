@@ -1,10 +1,9 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:phoso/components/card_dialog.dart';
+import 'package:phoso/components/dialog_option.dart';
 import 'package:phoso/models/hex_color.dart';
 import 'package:phoso/models/photo_sound.dart';
-import 'package:phoso/screens/home.dart';
 
 import '../main.dart';
 
@@ -31,15 +30,13 @@ class PhosoCard extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: (PhosoApp.darkMode)
-                ? Colors.white
-                : HexColor.fromHex("#FF1A0926"),
+            color: HexColor.fromHex("#FF1A0926"),
             width: 1.5,
           ),
         ),
         child: Material(
           borderRadius: BorderRadius.circular(12),
-          color: bgColor,
+          color: Theme.of(context).primaryColor,
           child: InkWell(
             borderRadius: BorderRadius.circular(12),
             onTap: () {
@@ -72,13 +69,12 @@ class PhosoCard extends StatelessWidget {
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 20,
-                          color: reversedColor,
                         ),
                       ),
                     ),
                   ],
                 ),
-                CardDialog(
+                DialogOption(
                   photoSound: this.photoSound,
                 ),
               ],
@@ -90,12 +86,7 @@ class PhosoCard extends StatelessWidget {
   }
 
   void setColors() {
-    if (PhosoApp.darkMode) {
-      bgColor = Colors.black;
-      reversedColor = Colors.white;
-    } else {
-      bgColor = Colors.white;
-      reversedColor = Colors.black;
-    }
+    bgColor = Colors.black;
+    reversedColor = Colors.white;
   }
 }

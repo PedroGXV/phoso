@@ -31,6 +31,8 @@ dependencies:
   path_provider:
   audioplayers: 0.17.0
   shared_preferences:
+  provider: ^5.0.0
+  package_info: ^2.0.0
   flutter_plugin_android_lifecycle:
 
   # The following adds the Cupertino Icons font to your application.

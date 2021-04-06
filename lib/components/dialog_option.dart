@@ -2,13 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:phoso/models/photo_sound.dart';
 import 'package:phoso/screens/deleting.dart';
 
-import '../main.dart';
-
-class CardDialog extends StatelessWidget {
+class DialogOption extends StatelessWidget {
   Map<String, Function> onTap;
   PhotoSound photoSound;
 
-  CardDialog({
+  DialogOption({
     @required this.photoSound,
     this.onTap,
   });
@@ -64,7 +62,6 @@ class CardDialog extends StatelessWidget {
           },
           child: Icon(
             Icons.settings,
-            color: (PhosoApp.darkMode) ? Colors.white : Colors.black,
           ),
         ),
       ),

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:phoso/main.dart';
 
 class Loading extends StatelessWidget {
   final String msg;
@@ -23,9 +22,7 @@ class Loading extends StatelessWidget {
             msg,
             style: TextStyle(
               fontSize: 25,
-              color: (PhosoApp.darkMode)
-                  ? Colors.white
-                  : Colors.black,
+              color: Colors.black,
             ),
           ),
         ],
