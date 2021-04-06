@@ -24,7 +24,7 @@ Lower Versions: Download and use the debug version
 - New Theme Manager! (Easier to understand and manage)
 - Added dialog feedback in Playlist Add Form (displays success or failure)
 - Generalized dialogs
-- Updated Audio Player Layout
+- Updated Audio Player Layout.
 ---
 **0.3.2**
 
