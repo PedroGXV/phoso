@@ -25,7 +25,6 @@ Lower Versions: Download and use the debug version
 - Added dialog feedback in Playlist Add Form (displays success or failure)
 - Generalized dialogs
 - Updated Audio Player Layout
-- Debug APK size decreased (from 51MB to 40MB)
 ---
 **0.3.2**
 
