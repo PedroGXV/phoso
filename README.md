@@ -13,10 +13,19 @@ Lower Versions: Download and use the debug version
 
 ## Version
 
-**Current: 0.3.1**
+**Current: 0.4.0**
 
 ## Patches
 
+---
+**0.4.0**
+
+- Added a new option to add playlists in home screen (removed fab)
+- New Theme Manager! (Easier to understand and manage)
+- Added dialog feedback in Playlist Add Form (displays success or failure)
+- Generalized dialogs
+- Updated Audio Player Layout
+- Debug APK size decreased (from 51MB to 40MB)
 ---
 **0.3.2**
 

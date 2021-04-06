@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:phoso/components/loading.dart';
 import 'package:phoso/database/app_database.dart';
-import 'package:phoso/main.dart';
 
 class Deleting extends StatefulWidget {
   int idTarget;
@@ -27,9 +26,7 @@ class _DeletingState extends State<Deleting> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: (PhosoApp.darkMode)
-          ? Colors.black
-          : Colors.white,
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text('Exlcuir playlist'),
       ),
@@ -62,9 +59,7 @@ class _DeletingState extends State<Deleting> {
                           'Playlist excluida.',
                           style: TextStyle(
                             fontSize: 30,
-                            color: (PhosoApp.darkMode)
-                                ? Colors.white
-                                : Colors.black,
+                            color: Colors.black,
                           ),
                         ),
                       ),

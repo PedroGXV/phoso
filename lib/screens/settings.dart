@@ -3,15 +3,22 @@ import 'package:phoso/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Settings extends StatefulWidget {
+  String version;
+
+  Settings({@required this.version});
+
   @override
-  _SettingsState createState() => _SettingsState();
+  _SettingsState createState() => _SettingsState(version: version);
 }
 
 class _SettingsState extends State<Settings> {
+  String version;
+
+  _SettingsState({@required this.version});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: PhosoApp.darkMode ? Colors.black : Colors.white,
       appBar: AppBar(
         title: Text('Settings'),
       ),
@@ -22,19 +29,19 @@ class _SettingsState extends State<Settings> {
             Padding(
               padding: const EdgeInsets.only(top: 8.0),
               child: _buildList(
-                icon: (PhosoApp.darkMode)
-                    ? Icons.nightlight_round
-                    : Icons.wb_sunny_outlined,
+                icon: Icons.wb_sunny_outlined,
                 listTitle: 'Tema',
-                listSubtitle: (PhosoApp.darkMode) ? 'Escuro' : 'Claro',
+                listSubtitle: 'Claro',
                 onTap: () async {
-                  await setState(() {
-                    PhosoApp.darkMode = !PhosoApp.darkMode;
-                  });
+                  await setState(() async {
+                    String currentTheme = await PhosoApp.theme.currentTheme();
 
-                  SharedPreferences prefs = await initPrefs();
-                  prefs.setBool('darkMode', PhosoApp.darkMode);
-                  print(prefs.getBool('darkMode'));
+                    if (currentTheme == 'light') {
+                      PhosoApp.theme.setDarkMode();
+                    } else {
+                      PhosoApp.theme.setLightMode();
+                    }
+                  });
                 },
               ),
             ),
@@ -43,7 +50,7 @@ class _SettingsState extends State<Settings> {
               child: _buildList(
                 icon: Icons.info_outline_rounded,
                 listTitle: 'Version',
-                listSubtitle: '0.3.2',
+                listSubtitle: version,
                 onTap: () {},
               ),
             ),
@@ -73,27 +80,24 @@ class _SettingsState extends State<Settings> {
         },
         child: Container(
           decoration: BoxDecoration(
+            color: Theme.of(context).primaryColor,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: (PhosoApp.darkMode) ? Colors.white : Colors.black,
+              color: Theme.of(context).accentColor,
             ),
           ),
           child: ListTile(
             leading: Icon(
               icon,
-              color: (PhosoApp.darkMode) ? Colors.white : Colors.black,
               size: 30,
             ),
             title: Text(
               listTitle,
-              style: TextStyle(
-                color: (PhosoApp.darkMode) ? Colors.white : Colors.black,
-              ),
             ),
             subtitle: Text(
               listSubtitle,
               style: TextStyle(
-                color: (PhosoApp.darkMode) ? Colors.white : Colors.grey[700],
+                color: Colors.grey[700],
               ),
             ),
           ),

@@ -1,7 +1,6 @@
 import 'package:audioplayers/audio_cache.dart';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:phoso/main.dart';
 
 enum PlayerState { stopped, playing, paused }
 
@@ -106,7 +105,7 @@ class _AudioPlayerOptState extends State<AudioPlayerOpt> {
     setUrl(soundSrc);
 
     return Material(
-      color: (PhosoApp.darkMode) ? Colors.black : Colors.white,
+      color: Theme.of(context).backgroundColor,
       child: InkWell(
         onTap: () {},
         child: Container(
@@ -119,9 +118,6 @@ class _AudioPlayerOptState extends State<AudioPlayerOpt> {
             children: [
               Text(
                 '${(this.soundName != null) ? this.soundName : getNameThroughFilePath()}',
-                style: TextStyle(
-                  color: (PhosoApp.darkMode) ? Colors.white : Colors.black,
-                ),
                 textAlign: TextAlign.center,
               ),
               SizedBox(
@@ -129,16 +125,14 @@ class _AudioPlayerOptState extends State<AudioPlayerOpt> {
               ),
               Container(
                 width: 500,
-                child: Row(
+                child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    _buildTimeText('${position.inMinutes}',
-                        '${position.inSeconds.remainder(60)}'),
                     slider(),
-                    _buildTimeText('${musicLength.inMinutes}',
-                        '${musicLength.inSeconds.remainder(60)}'),
+                    _buildTimeText('${position.inMinutes}',
+                        '${position.inSeconds.remainder(60)}','${musicLength.inMinutes}','${musicLength.inSeconds.remainder(60)}'),
                   ],
                 ),
               ),
@@ -149,21 +143,18 @@ class _AudioPlayerOptState extends State<AudioPlayerOpt> {
                   _buildAudioOpt(
                     onTap: (isPlaying)
                         ? () async {
-                      await pause();
-                      setState(() {
-                        isPlaying = false;
-                      });
-                    }
+                            await pause();
+                            setState(() {
+                              isPlaying = false;
+                            });
+                          }
                         : () async {
-                      await playLocal();
-                      setState(() {
-                        isPlaying = true;
-                      });
-                    },
-                    icon: (isPlaying)
-                        ? Icons.pause
-                        : Icons.play_arrow,
-                    color: (PhosoApp.darkMode) ? Colors.white : Colors.black,
+                            await playLocal();
+                            setState(() {
+                              isPlaying = true;
+                            });
+                          },
+                    icon: (isPlaying) ? Icons.pause : Icons.play_arrow,
                   ),
                   _buildAudioOpt(
                     color: Colors.redAccent,
@@ -191,12 +182,9 @@ class _AudioPlayerOptState extends State<AudioPlayerOpt> {
     return musicLength.toString();
   }
 
-  Widget _buildTimeText(firstTime, secondTime) {
+  Widget _buildTimeText(firstTime, secondTime, thirdTime, fourthTime) {
     return Text(
-      '$firstTime:$secondTime',
-      style: TextStyle(
-        color: (PhosoApp.darkMode) ? Colors.white : Colors.black,
-      ),
+      '$firstTime:$secondTime/$thirdTime:$fourthTime',
     );
   }
 
@@ -213,7 +201,7 @@ class _AudioPlayerOptState extends State<AudioPlayerOpt> {
         padding: const EdgeInsets.only(left: 2.0, right: 2.0),
         child: Icon(
           icon,
-          color: (color != null) ? color : Colors.black,
+          color: (color != null) ? color : Theme.of(context).iconTheme.color,
           size: 60,
         ),
       ),
@@ -226,7 +214,7 @@ class _AudioPlayerOptState extends State<AudioPlayerOpt> {
       children: [
         Slider.adaptive(
           activeColor: Colors.deepPurple,
-          inactiveColor: (PhosoApp.darkMode) ? Colors.white60 : Colors.black26,
+          inactiveColor: Colors.black26,
           value: position.inSeconds.toDouble(),
           min: 0,
           max: musicLength.inSeconds.toDouble(),

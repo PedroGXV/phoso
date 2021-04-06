@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:phoso/components/audio_player_opt.dart';
-import 'package:phoso/main.dart';
 import 'dart:io';
 import 'package:photo_view/photo_view.dart';
 
@@ -81,7 +80,6 @@ class _ViewPhosoState extends State<ViewPhoso> {
         ],
       ),
       body: Container(
-        color: (PhosoApp.darkMode) ? Colors.black : Colors.white,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           mainAxisSize: MainAxisSize.max,
@@ -96,10 +94,10 @@ class _ViewPhosoState extends State<ViewPhoso> {
                 ),
                 enableRotation: _rotate,
                 backgroundDecoration: BoxDecoration(
-                  color: (PhosoApp.darkMode) ? Colors.black : Colors.white,
+                  color: Theme.of(context).backgroundColor,
                   border: Border.all(
                     width: 2,
-                    color: (PhosoApp.darkMode) ? Colors.white : Colors.black,
+                    color: Theme.of(context).accentColor,
                   ),
                 ),
                 imageProvider: FileImage(

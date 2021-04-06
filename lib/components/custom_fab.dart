@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../main.dart';
-
 class CustomFab extends StatelessWidget {
 
   static int fabCounter = 0;
@@ -32,24 +30,20 @@ class CustomFab extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             spreadRadius: 2,
-            color: (PhosoApp.darkMode) ? Colors.white : Colors.black,
+            color: Colors.black,
           ),
         ],
       ),
       child: FloatingActionButton(
         heroTag: 'fab${fabCounter.toString()}',
-        backgroundColor: (color == null)
-            ? ((PhosoApp.darkMode) ? Colors.black : Colors.white)
-            : color,
         elevation: 5,
+        backgroundColor: (color != null) ? color : Theme.of(context).floatingActionButtonTheme.backgroundColor,
         onPressed: () {
           onPressed();
         },
         child: Icon(
           icon,
-          color: (iconColor == null)
-              ? ((PhosoApp.darkMode) ? Colors.white : Colors.black)
-              : iconColor,
+          color: Theme.of(context).iconTheme.color,
         ),
       ),
     );

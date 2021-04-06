@@ -6,8 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:audio_picker/audio_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:phoso/components/audio_player_opt.dart';
+import 'package:phoso/components/custom_dialog.dart';
 import 'package:phoso/database/app_database.dart';
-import 'package:phoso/main.dart';
+import 'home.dart';
 import 'package:phoso/models/photo_sound.dart';
 
 class PathPick extends StatefulWidget {
@@ -43,18 +44,26 @@ class _PathPickState extends State<PathPick> {
           leading: Material(
             color: Colors.transparent,
             child: InkWell(
-              child: Icon(Icons.arrow_back),
+              child: Icon(
+                Icons.arrow_back,
+                color: Theme.of(context).iconTheme.color,
+              ),
               onTap: () {
                 Navigator.of(context).pop();
               },
             ),
           ),
-          title: Text('Adicionar Playlist'),
+          title: Text(
+            'Adicionar Playlist',
+            style: TextStyle(
+              color: Theme.of(context).textTheme.bodyText1.color,
+            ),
+          ),
         ),
         body: SingleChildScrollView(
           scrollDirection: Axis.vertical,
           child: Container(
-            color: (PhosoApp.darkMode) ? Colors.black : Colors.white,
+            color: Theme.of(context).backgroundColor,
             child: Padding(
               padding: EdgeInsets.fromLTRB(15, 0, 15, 0),
               child: Column(
@@ -66,24 +75,16 @@ class _PathPickState extends State<PathPick> {
                     controller: _playlistName,
                     style: TextStyle(
                       fontSize: 18,
-                      color: (PhosoApp.darkMode) ? Colors.white : Colors.black,
+                      color: Theme.of(context).textTheme.bodyText1.color,
                     ),
                     decoration: InputDecoration(
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(
-                          color: Colors.deepPurple,
-                        ),
-                      ),
-                      border: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Colors.deepPurple),
-                      ),
-                      hintStyle: TextStyle(
-                        color:
-                            (PhosoApp.darkMode) ? Colors.white : Colors.black,
-                      ),
+                      focusedBorder:
+                          Theme.of(context).inputDecorationTheme.focusedBorder,
+                      border: Theme.of(context).inputDecorationTheme.border,
+                      enabledBorder:
+                          Theme.of(context).inputDecorationTheme.enabledBorder,
                       labelStyle: TextStyle(
-                        color:
-                            (PhosoApp.darkMode) ? Colors.white60 : Colors.black,
+                        color: Theme.of(context).textTheme.bodyText1.color,
                       ),
                       labelText: 'Nome da Playlist',
                       hintText: 'Adicione o nome da playlist',
@@ -94,7 +95,7 @@ class _PathPickState extends State<PathPick> {
                     'Imagem',
                     style: TextStyle(
                       fontSize: 22,
-                      color: (PhosoApp.darkMode) ? Colors.white : Colors.black,
+                      color: Theme.of(context).textTheme.bodyText1.color,
                     ),
                   ),
                   _space(15),
@@ -111,7 +112,7 @@ class _PathPickState extends State<PathPick> {
                     'Áudio',
                     style: TextStyle(
                       fontSize: 22,
-                      color: (PhosoApp.darkMode) ? Colors.white : Colors.black,
+                      color: Theme.of(context).textTheme.bodyText1.color,
                     ),
                   ),
                   _space(15),
@@ -126,51 +127,12 @@ class _PathPickState extends State<PathPick> {
                   ),
                   _space(25),
                   ElevatedButton(
-                    style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all<Color>(
-                          Theme.of(context).buttonColor),
-                      minimumSize: MaterialStateProperty.all<Size>(Size(
-                        double.maxFinite,
-                        50,
-                      )),
-                    ),
+                    style: Theme.of(context).elevatedButtonTheme.style,
                     onPressed: () async {
-                      bool phosoAdded = await _addPhoso()
-                          .then((value) {
-                            Navigator.of(context).pop();
-                          })
-                          .timeout(
-                            Duration(seconds: 5),
-                          )
-                          .catchError(() {
-                            showDialog(
-                              context: context,
-                              barrierDismissible: false,
-                              builder: (BuildContext dialogContex) {
-                                return Container(
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                      color: Colors.redAccent,
-                                    ),
-                                  ),
-                                  child: AlertDialog(
-                                    title: Text('Algo deu errado.'),
-                                    content: SingleChildScrollView(
-                                      child: Text(
-                                          'Certifique-se que preencheu todos os campos, e que o nome da playlist não tenha mais de 20 caracteres.'),
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () =>
-                                            Navigator.of(dialogContex).pop(),
-                                        child: Text('Ok'),
-                                      )
-                                    ],
-                                  ),
-                                );
-                              },
-                            );
-                          });
+                      bool phosoAdded =
+                          await _addPhoso().then((value) {}).timeout(
+                                Duration(seconds: 5),
+                              );
                     },
                     child: Text(
                       'Adicionar'.toUpperCase(),
@@ -191,24 +153,44 @@ class _PathPickState extends State<PathPick> {
   }
 
   Future<bool> _addPhoso() async {
-    if (this._audioAbsolutePath != null && this._audioAbsolutePath.isNotEmpty) {
-      if (this._imagePath != null && this._imagePath.isNotEmpty) {
-        if (_playlistName.text != null &&
-            _playlistName.text.isNotEmpty &&
-            _playlistName.text.length <= 20) {
-          print(">>> [ ADDING ] <<<");
+    if (_audioAbsolutePath != null &&
+        _audioAbsolutePath.isNotEmpty &&
+        _imagePath.isNotEmpty &&
+        _imagePath != null &&
+        _playlistName.text.isNotEmpty &&
+        _playlistName.text.length <= 20) {
+      await AppDatabase.save(PhotoSound(
+        playlistName: this._playlistName.text,
+        soundSrc: this._audioAbsolutePath,
+        photoSrc: this._imagePath,
+      )).then(
+        (value) => CustomDialog(
+          context: context,
+          title: 'Adicionado!',
+          actions: {
+            'Ok': () {
+              Navigator.pushReplacement(
+                  context, MaterialPageRoute(builder: (context) => Home()));
+            },
+          },
+        ),
+      );
 
-          await AppDatabase.save(PhotoSound(
-            playlistName: this._playlistName.text,
-            soundSrc: this._audioAbsolutePath,
-            photoSrc: this._imagePath,
-          )).then((value) => print(">>> [ ADDED ] <<<")).catchError((error) {
-            print(">>> [ ADD FAILED ] <<< ${error.toString()}");
-          });
-
-          return true;
-        }
-      }
+      return true;
+    } else {
+      CustomDialog(
+        context: context,
+        title: 'Erro ao adicionar!',
+        contents: {
+          'Certifique-se que preencheu todos os campos, e o nome tenha menos de 20 caracteres':
+              () {},
+        },
+        actions: {
+          'OK': () {
+            Navigator.of(context).pop();
+          },
+        },
+      );
     }
 
     return false;
@@ -231,6 +213,7 @@ class _PathPickState extends State<PathPick> {
         onTap();
       },
       child: Container(
+        color: (_imagePath == null) ? Theme.of(context).backgroundColor : null,
         width: double.maxFinite,
         height: (height == null) ? 300 : height,
         // displaying image as decoration
@@ -242,7 +225,6 @@ class _PathPickState extends State<PathPick> {
                     File(_imagePath),
                   ),
                 ),
-                color: (PhosoApp.darkMode) ? Colors.black : Colors.white,
                 borderRadius: BorderRadius.all(
                   Radius.circular(10),
                 ),
@@ -272,9 +254,8 @@ class _PathPickState extends State<PathPick> {
                         color: Colors.deepPurple,
                       ),
                     ),
-                    color: (PhosoApp.darkMode) ? Colors.black : Colors.white,
                     child: Material(
-                      color: Colors.transparent,
+                      color: Theme.of(context).backgroundColor,
                       child: InkWell(
                         onTap: () {
                           onTap();
@@ -304,13 +285,13 @@ class _PathPickState extends State<PathPick> {
       Icon(
         icon,
         size: 40,
-        color: (PhosoApp.darkMode) ? Colors.white : Colors.black,
+        color: Theme.of(context).iconTheme.color,
       ),
       SizedBox(height: 20),
       Text(
         text,
         style: TextStyle(
-          color: (PhosoApp.darkMode) ? Colors.white : Colors.black,
+          color: Theme.of(context).textTheme.bodyText1.color,
         ),
       ),
     ];
@@ -340,57 +321,17 @@ class _PathPickState extends State<PathPick> {
     Navigator.of(context).pop();
   }
 
-  Future<void> _showImagePickOptDialog(BuildContext context) {
-    return showDialog(
+  void _showImagePickOptDialog(BuildContext context) {
+    CustomDialog(
       context: context,
-      builder: (context) {
-        return GestureDetector(
-          onTap: () {
-            Navigator.of(context).pop();
-          },
-          child: Container(
-            color: (PhosoApp.darkMode)
-                ? Colors.white.withOpacity(0.3)
-                : Colors.black.withOpacity(0.3),
-            child: AlertDialog(
-              elevation: 20,
-              backgroundColor:
-                  (PhosoApp.darkMode) ? Colors.black : Colors.white,
-              content: Container(
-                width: double.maxFinite,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ListTile(
-                      title: Text(
-                        'From Gallery',
-                        style: TextStyle(
-                          color:
-                              (PhosoApp.darkMode) ? Colors.white : Colors.black,
-                        ),
-                      ),
-                      onTap: () {
-                        _loadImagePicker(ImageSource.gallery);
-                      },
-                    ),
-                    ListTile(
-                      title: Text(
-                        'From Camera',
-                        style: TextStyle(
-                          color:
-                              (PhosoApp.darkMode) ? Colors.white : Colors.black,
-                        ),
-                      ),
-                      onTap: () {
-                        _loadImagePicker(ImageSource.camera);
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
+      title: 'Open from',
+      contents: {
+        'Gallery': () {
+          _loadImagePicker(ImageSource.gallery);
+        },
+        'Camera': () {
+          _loadImagePicker(ImageSource.camera);
+        },
       },
     );
   }
