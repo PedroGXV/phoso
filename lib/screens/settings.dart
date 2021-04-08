@@ -13,92 +13,109 @@ class Settings extends StatefulWidget {
 
 class _SettingsState extends State<Settings> {
   String version;
+  String _theme;
 
   _SettingsState({@required this.version});
 
   @override
+  void setState(fn) {
+    _getCurrentTheme().then((value) {
+      _theme = value;
+      print(_theme);
+      super.setState(fn);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    setState(() {});
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Settings'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: ListView(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: _buildList(
-                icon: Icons.wb_sunny_outlined,
-                listTitle: 'Tema',
-                listSubtitle: 'Claro',
-                onTap: () async {
-                  await setState(() async {
-                    String currentTheme = await PhosoApp.theme.currentTheme();
-
-                    if (currentTheme == 'light') {
-                      PhosoApp.theme.setDarkMode();
-                    } else {
-                      PhosoApp.theme.setLightMode();
-                    }
-                  });
-                },
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: _buildList(
-                icon: Icons.info_outline_rounded,
-                listTitle: 'Version',
-                listSubtitle: version,
-                onTap: () {},
-              ),
-            ),
-          ],
-        ),
+      body: ListView(
+        children: [
+          _buildField(
+            icon: (_theme == 'light') ? Icons.wb_sunny_outlined : Icons.nights_stay_outlined,
+            listTitle: 'Tema',
+            listSubtitle: (_theme == 'light') ? 'Claro' : 'Escuro',
+            onTap: () {
+              setState(() {
+                if (_theme == 'light') {
+                  PhosoApp.theme.setDarkMode();
+                } else {
+                  PhosoApp.theme.setLightMode();
+                }
+              });
+            },
+          ),
+          _buildField(
+            listTitle: 'Reset'.toUpperCase(),
+            listSubtitle: 'Reset all playlists',
+            icon: Icons.delete_forever,
+            listColor: Colors.redAccent,
+            onTap: () {},
+          ),
+          _buildField(
+            icon: Icons.info_outline_rounded,
+            listTitle: 'Version',
+            listSubtitle: version,
+            onTap: () {},
+          ),
+        ],
       ),
     );
   }
 
-  Future<SharedPreferences> initPrefs() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs;
+  Future<String> _getCurrentTheme() async {
+    return await PhosoApp.theme.currentTheme();
   }
 
-  Widget _buildList({
-    @required String listTitle,
-    @required String listSubtitle,
-    @required Function onTap,
-    IconData icon,
-  }) {
+  Widget _buildField(
+      {@required String listTitle,
+      String listSubtitle,
+      @required Function onTap,
+      IconData icon,
+      Color listColor}) {
     return Material(
-      color: Colors.transparent,
+      color: Theme.of(context).primaryColor,
       child: InkWell(
-        borderRadius: BorderRadius.circular(12),
         onTap: () {
           onTap();
         },
         child: Container(
           decoration: BoxDecoration(
-            color: Theme.of(context).primaryColor,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: Theme.of(context).accentColor,
+            color: (listColor == null)
+                ? Colors.transparent
+                : listColor,
+            border: Border(
+              bottom: BorderSide(
+                color: Theme.of(context).accentColor,
+              ),
+              top: BorderSide(
+                color: Theme.of(context).accentColor,
+              ),
             ),
           ),
-          child: ListTile(
-            leading: Icon(
-              icon,
-              size: 30,
-            ),
-            title: Text(
-              listTitle,
-            ),
-            subtitle: Text(
-              listSubtitle,
-              style: TextStyle(
-                color: Colors.grey[700],
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ListTile(
+              leading: Icon(
+                icon,
+                size: 30,
               ),
+              title: Text(
+                listTitle,
+              ),
+              subtitle: (listSubtitle == null)
+                  ? null
+                  : Text(
+                      listSubtitle,
+                      style: TextStyle(
+                        color: Colors.grey[700],
+                      ),
+                    ),
             ),
           ),
         ),

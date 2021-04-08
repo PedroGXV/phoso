@@ -7,16 +7,18 @@ import 'package:audio_picker/audio_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:phoso/components/audio_player_opt.dart';
 import 'package:phoso/components/custom_dialog.dart';
+import 'package:phoso/components/loading.dart';
 import 'package:phoso/database/app_database.dart';
-import 'home.dart';
 import 'package:phoso/models/photo_sound.dart';
 
-class PathPick extends StatefulWidget {
+import 'home.dart';
+
+class FormPlaylist extends StatefulWidget {
   @override
-  _PathPickState createState() => _PathPickState();
+  _FormPlaylistState createState() => _FormPlaylistState();
 }
 
-class _PathPickState extends State<PathPick> {
+class _FormPlaylistState extends State<FormPlaylist> {
   AudioPicker audioPlayer;
   String _audioAbsolutePath;
 
@@ -84,7 +86,16 @@ class _PathPickState extends State<PathPick> {
                       enabledBorder:
                           Theme.of(context).inputDecorationTheme.enabledBorder,
                       labelStyle: TextStyle(
-                        color: Theme.of(context).textTheme.bodyText1.color,
+                        color: Theme.of(context)
+                            .inputDecorationTheme
+                            .labelStyle
+                            .color,
+                      ),
+                      hintStyle: TextStyle(
+                        color: Theme.of(context)
+                            .inputDecorationTheme
+                            .hintStyle
+                            .color,
                       ),
                       labelText: 'Nome da Playlist',
                       hintText: 'Adicione o nome da playlist',
@@ -100,6 +111,7 @@ class _PathPickState extends State<PathPick> {
                   ),
                   _space(15),
                   _buildPickerContainer(
+                    context: context,
                     onTap: () {
                       _showImagePickOptDialog(context);
                     },
@@ -117,6 +129,7 @@ class _PathPickState extends State<PathPick> {
                   ),
                   _space(15),
                   _buildPickerContainer(
+                    context: context,
                     onTap: () {
                       _openAudioPicker();
                     },
@@ -128,12 +141,10 @@ class _PathPickState extends State<PathPick> {
                   _space(25),
                   ElevatedButton(
                     style: Theme.of(context).elevatedButtonTheme.style,
-                    onPressed: () async {
-                      bool phosoAdded =
-                          await _addPhoso().then((value) {}).timeout(
-                                Duration(seconds: 5),
-                              );
-                    },
+                    onPressed: () async =>
+                        await _addPhoso().then((value) {}).timeout(
+                              Duration(seconds: 5),
+                            ),
                     child: Text(
                       'Adicionar'.toUpperCase(),
                       style: TextStyle(
@@ -159,37 +170,49 @@ class _PathPickState extends State<PathPick> {
         _imagePath != null &&
         _playlistName.text.isNotEmpty &&
         _playlistName.text.length <= 20) {
+      CustomDialog(
+        context: context,
+        title: 'Adicionando...',
+        contents: [
+          Loading(),
+        ],
+      );
+
       await AppDatabase.save(PhotoSound(
         playlistName: this._playlistName.text,
         soundSrc: this._audioAbsolutePath,
         photoSrc: this._imagePath,
-      )).then(
-        (value) => CustomDialog(
+      )).then((value) {
+        CustomDialog(
           context: context,
           title: 'Adicionado!',
-          actions: {
-            'Ok': () {
-              Navigator.pushReplacement(
-                  context, MaterialPageRoute(builder: (context) => Home()));
-            },
-          },
-        ),
-      );
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pushNamedAndRemoveUntil(context, '/', (_) => false),
+              child: Text('OK!'),
+            ),
+          ],
+        );
+      });
 
       return true;
     } else {
       CustomDialog(
         context: context,
         title: 'Erro ao adicionar!',
-        contents: {
-          'Certifique-se que preencheu todos os campos, e o nome tenha menos de 20 caracteres':
-              () {},
-        },
-        actions: {
-          'OK': () {
-            Navigator.of(context).pop();
-          },
-        },
+        contents: [
+          ListTile(
+            onTap: () => Navigator.of(context).pop(),
+            title: Text(
+                'Certifique-se que preencheu todos os campos, e o nome tenha menos de 20 caracteres!'),
+          ),
+        ],
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('OK!'),
+          ),
+        ],
       );
     }
 
@@ -207,6 +230,7 @@ class _PathPickState extends State<PathPick> {
       @required String type,
       @required IconData icon,
       @required String description,
+      @required BuildContext context,
       double height}) {
     return GestureDetector(
       onTap: () {
@@ -325,14 +349,16 @@ class _PathPickState extends State<PathPick> {
     CustomDialog(
       context: context,
       title: 'Open from',
-      contents: {
-        'Gallery': () {
-          _loadImagePicker(ImageSource.gallery);
-        },
-        'Camera': () {
-          _loadImagePicker(ImageSource.camera);
-        },
-      },
+      contents: [
+        ListTile(
+          onTap: () => _loadImagePicker(ImageSource.gallery),
+          title: Text('From gallery'),
+        ),
+        ListTile(
+          onTap: () => _loadImagePicker(ImageSource.camera),
+          title: Text('From camera'),
+        )
+      ],
     );
   }
 }

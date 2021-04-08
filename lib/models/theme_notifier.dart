@@ -17,6 +17,10 @@ class ThemeNotifier with ChangeNotifier {
     floatingActionButtonTheme: FloatingActionButtonThemeData(
       backgroundColor: Colors.black54,
     ),
+    sliderTheme: SliderThemeData(
+      activeTrackColor: Colors.white,
+      inactiveTrackColor: Colors.white12,
+    ),
     iconTheme: IconThemeData(
       color: Colors.white,
     ),
@@ -30,6 +34,12 @@ class ThemeNotifier with ChangeNotifier {
         borderSide: const BorderSide(
           color: Colors.deepPurple,
         ),
+      ),
+      labelStyle: TextStyle(
+        color: Colors.grey,
+      ),
+      hintStyle: TextStyle(
+        color: Colors.grey,
       ),
       border: OutlineInputBorder(
         borderSide: const BorderSide(color: Colors.deepPurple),
@@ -63,6 +73,10 @@ class ThemeNotifier with ChangeNotifier {
     floatingActionButtonTheme: FloatingActionButtonThemeData(
       backgroundColor: Colors.white,
     ),
+    sliderTheme: SliderThemeData(
+      activeTrackColor: Colors.black,
+      inactiveTrackColor: Colors.blueGrey,
+    ),
     iconTheme: IconThemeData(
       color: Colors.black,
     ),
@@ -76,6 +90,12 @@ class ThemeNotifier with ChangeNotifier {
         borderSide: const BorderSide(
           color: Colors.deepPurple,
         ),
+      ),
+      labelStyle: TextStyle(
+        color: Colors.grey,
+      ),
+      hintStyle: TextStyle(
+        color: Colors.grey,
       ),
       border: OutlineInputBorder(
         borderSide: const BorderSide(color: Colors.deepPurple),
@@ -117,7 +137,7 @@ class ThemeNotifier with ChangeNotifier {
     });
   }
 
-  dynamic currentTheme() async {
+  dynamic currentTheme() {
     return StorageManager.readData('themeMode').then((value) => value);
   }
 
