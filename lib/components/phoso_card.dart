@@ -1,9 +1,10 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:phoso/components/dialog_option.dart';
+import 'package:phoso/components/custom_dialog.dart';
 import 'package:phoso/models/hex_color.dart';
 import 'package:phoso/models/photo_sound.dart';
+import 'package:phoso/screens/deleting.dart';
 
 import '../main.dart';
 
@@ -74,8 +75,38 @@ class PhosoCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                DialogOption(
-                  photoSound: this.photoSound,
+                Container(
+                  height: double.maxFinite,
+                  child: Material(
+                    borderRadius: BorderRadius.circular(100),
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(100),
+                      onTap: () => CustomDialog(
+                        context: context,
+                        title: photoSound.playlistName,
+                        contents: [
+                          Container(
+                            color: Colors.redAccent,
+                            child: ListTile(
+                              onTap: () => Navigator.of(context).push(
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        Deleting(idTarget: photoSound.id)),
+                              ).then((value) {
+                                Navigator.of(context).pop();
+                              }),
+                              title: Text('Excluir'.toUpperCase()),
+                            ),
+                          ),
+                        ],
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(15.0),
+                        child: Icon(Icons.settings),
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),

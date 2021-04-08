@@ -26,7 +26,6 @@ class _DeletingState extends State<Deleting> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text('Exlcuir playlist'),
       ),
@@ -59,7 +58,7 @@ class _DeletingState extends State<Deleting> {
                           'Playlist excluida.',
                           style: TextStyle(
                             fontSize: 30,
-                            color: Colors.black,
+                            color: Theme.of(context).textTheme.bodyText1.color,
                           ),
                         ),
                       ),

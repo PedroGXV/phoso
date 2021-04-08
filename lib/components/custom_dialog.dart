@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 class CustomDialog {
   BuildContext context;
   String title;
-  Map<String, Function> contents;
-  Map<String, Function> actions;
+  List<Widget> contents;
+  List<Widget> actions;
 
   CustomDialog({
     @required this.context,
@@ -21,45 +21,12 @@ class CustomDialog {
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
-            children: (contents != null) ? _generateContents() : null,
+            children: (contents != null) ? this.contents : [],
           ),
-          actions: (actions != null) ? _generateActions() : null,
+          actions: (actions != null) ? this.actions : [],
         );
       },
     );
   }
 
-  List<ListTile> _generateContents() {
-    List<ListTile> listTiles = [];
-
-    contents.forEach((key, value) {
-      listTiles.add(
-        ListTile(
-          title: Text(key),
-          onTap: () {
-            value();
-          },
-        ),
-      );
-    });
-
-    return listTiles;
-  }
-
-  List<TextButton> _generateActions() {
-    List<TextButton> actionButtons = [];
-
-    this.actions.forEach((key, value) {
-      actionButtons.add(
-        TextButton(
-          onPressed: () {
-            value();
-          },
-          child: Text(key),
-        ),
-      );
-    });
-
-    return actionButtons;
-  }
 }

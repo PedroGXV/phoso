@@ -1,14 +1,15 @@
 import 'package:audioplayers/audio_cache.dart';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:phoso/main.dart';
 
 enum PlayerState { stopped, playing, paused }
 
 class AudioPlayerOpt extends StatefulWidget {
-  String soundSrc;
-  String soundName;
+  final String soundSrc;
+  final String soundName;
 
-  BoxDecoration boxDecoration;
+  final BoxDecoration boxDecoration;
 
   AudioPlayerOpt({
     @required this.soundSrc,
@@ -25,6 +26,10 @@ class AudioPlayerOpt extends StatefulWidget {
 }
 
 class _AudioPlayerOptState extends State<AudioPlayerOpt> {
+  // The class wasn't getting the right Theme in some situations
+  // so I just picked the theme through the main file
+  ThemeData _theme = PhosoApp.theme.getTheme();
+
   bool isPlaying = false;
 
   AudioPlayer _audioPlayer;
@@ -105,7 +110,7 @@ class _AudioPlayerOptState extends State<AudioPlayerOpt> {
     setUrl(soundSrc);
 
     return Material(
-      color: Theme.of(context).backgroundColor,
+      color: Colors.transparent,
       child: InkWell(
         onTap: () {},
         child: Container(
@@ -119,6 +124,9 @@ class _AudioPlayerOptState extends State<AudioPlayerOpt> {
               Text(
                 '${(this.soundName != null) ? this.soundName : getNameThroughFilePath()}',
                 textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: _theme.textTheme.bodyText1.color,
+                ),
               ),
               SizedBox(
                 height: 10,
@@ -185,6 +193,9 @@ class _AudioPlayerOptState extends State<AudioPlayerOpt> {
   Widget _buildTimeText(firstTime, secondTime, thirdTime, fourthTime) {
     return Text(
       '$firstTime:$secondTime/$thirdTime:$fourthTime',
+      style: TextStyle(
+        color: _theme.textTheme.bodyText1.color,
+      ),
     );
   }
 
@@ -201,8 +212,8 @@ class _AudioPlayerOptState extends State<AudioPlayerOpt> {
         padding: const EdgeInsets.only(left: 2.0, right: 2.0),
         child: Icon(
           icon,
-          color: (color != null) ? color : Theme.of(context).iconTheme.color,
           size: 60,
+          color: (color != null) ? color : _theme.iconTheme.color,
         ),
       ),
     );
@@ -213,8 +224,8 @@ class _AudioPlayerOptState extends State<AudioPlayerOpt> {
       mainAxisSize: MainAxisSize.max,
       children: [
         Slider.adaptive(
-          activeColor: Colors.deepPurple,
-          inactiveColor: Colors.black26,
+          activeColor: _theme.sliderTheme.activeTrackColor,
+          inactiveColor: _theme.sliderTheme.inactiveTrackColor,
           value: position.inSeconds.toDouble(),
           min: 0,
           max: musicLength.inSeconds.toDouble(),

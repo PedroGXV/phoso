@@ -22,7 +22,7 @@ class Loading extends StatelessWidget {
             msg,
             style: TextStyle(
               fontSize: 25,
-              color: Colors.black,
+              color: Theme.of(context).textTheme.bodyText1.color,
             ),
           ),
         ],

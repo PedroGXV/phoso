@@ -29,8 +29,7 @@ class CustomFab extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            spreadRadius: 2,
-            color: Colors.black,
+            color: Theme.of(context).accentColor,
           ),
         ],
       ),

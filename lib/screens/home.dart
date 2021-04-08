@@ -35,6 +35,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     );
   }
 
+  bool _playlistListOpen = true;
+
   Widget _buildListView() {
     return FutureBuilder<List<PhotoSound>>(
       initialData: [],
@@ -51,135 +53,129 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
             // TODO: Handle this case.
             break;
           case ConnectionState.done:
-            return Material(
-              color: Colors.transparent,
-              child: InkWell(
-                splashColor: Colors.transparent,
-                onTap: () {},
-                child: Container(
-                  color: Theme.of(context).backgroundColor,
-                  height: double.maxFinite,
-                  child: Column(
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(
-                              color: Theme.of(context).primaryColor,
-                              width: 3,
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        width: 2,
+                        color: Theme.of(context).primaryColor,
+                      ),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ElevatedButton(
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all(
+                            Theme.of(context).primaryColor),
+                      ),
+                      onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                              builder: (context) => FormPlaylist())),
+                      child: Row(children: [
+                        Icon(
+                          Icons.add,
+                          color: Theme.of(context).iconTheme.color,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(15.0),
+                          child: Text(
+                            'Nova Playlist',
+                            style: TextStyle(
+                              color:
+                                  Theme.of(context).textTheme.bodyText1.color,
                             ),
                           ),
                         ),
+                      ]),
+                    ),
+                  ),
+                ),
+                (snapshot.data.length == 0)
+                    ? Center(
                         child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(100),
-                              border: Border.all(
-                                color: Theme.of(context).accentColor,
+                          padding: EdgeInsets.only(top: 150),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.cancel_outlined,
+                                size: 45,
                               ),
-                            ),
-                            child: Material(
-                              borderRadius: BorderRadius.circular(100),
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(100),
-                                onTap: () async {
-                                  await Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (BuildContext context) =>
-                                          PathPick(),
-                                    ),
-                                  );
-
-                                  setState(() {});
-                                },
-                                child: Row(
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          color: Theme.of(context).dividerColor,
-                                          borderRadius:
-                                              BorderRadius.circular(100),
-                                          border: Border.all(
-                                            color:
-                                                Theme.of(context).accentColor,
-                                          ),
-                                        ),
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Icon(Icons.add),
-                                        ),
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(left: 5.0),
-                                      child: Text(
-                                        'Adicionar Playlist',
-                                        style: TextStyle(
-                                          fontSize: 21,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                              Padding(
+                                padding: const EdgeInsets.only(top: 24.0),
+                                child: Text(
+                                  'Nenhuma playlist criada.',
+                                  style: TextStyle(fontSize: 25),
                                 ),
                               ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () {
+                            setState(() {
+                              _playlistListOpen = !_playlistListOpen;
+                            });
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.only(
+                                left: 12.0, top: 8.0, bottom: 8.0),
+                            child: Row(
+                              children: [
+                                Text(
+                                  'Playlists'.toUpperCase(),
+                                  style: TextStyle(
+                                    fontSize: 17,
+                                    letterSpacing: 1.2,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                                Icon(
+                                  (_playlistListOpen)
+                                      ? Icons.arrow_drop_down
+                                      : Icons.arrow_drop_up,
+                                ),
+                              ],
                             ),
                           ),
                         ),
                       ),
-                      (snapshot.data.length == 0)
-                          ? Center(
-                              child: Padding(
-                                padding: EdgeInsets.only(top: 150),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.cancel_outlined,
-                                      size: 45,
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 24.0),
-                                      child: Text(
-                                        'Nenhuma playlist criada.',
-                                        style: TextStyle(fontSize: 25),
-                                      ),
-                                    ),
-                                  ],
+                // EXPANDED is generated together with Padding
+                Visibility(
+                  visible: _playlistListOpen,
+                  child: Expanded(
+                    child: ListView.builder(
+                      padding: EdgeInsets.all(10),
+                      itemCount: snapshot.data.length,
+                      itemBuilder: (context, index) {
+                        return PhosoCard(
+                          photoSound: snapshot.data[index],
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => ViewPhoso(
+                                  playlistName:
+                                      snapshot.data[index].playlistName,
+                                  photoSrc: snapshot.data[index].photoSrc,
+                                  soundSrc: snapshot.data[index].soundSrc,
                                 ),
                               ),
-                            )
-                          : ListView.builder(
-                              padding: EdgeInsets.all(10),
-                              itemCount: snapshot.data.length,
-                              itemBuilder: (context, index) {
-                                return PhosoCard(
-                                  photoSound: snapshot.data[index],
-                                  onTap: () {
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder: (context) => ViewPhoso(
-                                          playlistName:
-                                              snapshot.data[index].playlistName,
-                                          photoSrc:
-                                              snapshot.data[index].photoSrc,
-                                          soundSrc:
-                                              snapshot.data[index].soundSrc,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                );
-                              },
-                            ),
-                    ],
+                            );
+                          },
+                        );
+                      },
+                    ),
                   ),
                 ),
-              ),
+              ],
             );
             break;
         }

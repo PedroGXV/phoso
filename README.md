@@ -16,15 +16,18 @@ Lower Versions: Download and use the debug version
 **Current: 0.4.0**
 
 ## Patches
-
+ 
 ---
 **0.4.0**
+(rev.02)
 
 - Added a new option to add playlists in home screen (removed fab)
 - New Theme Manager! (Easier to understand and manage)
 - Added dialog feedback in Playlist Add Form (displays success or failure)
 - Generalized dialogs
-- Updated Audio Player Layout.
+- Updated, improved and solved Audio Player Layout
+- Improved settings screen
+- Changed home screen (now you can hide the Playlist List and the add Button was updated)
 ---
 **0.3.2**
 
