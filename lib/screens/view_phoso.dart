@@ -49,31 +49,22 @@ class _ViewPhosoState extends State<ViewPhoso> {
         title: Text((playlistName != null) ? playlistName : 'Playlist name'),
         actions: [
           Container(
-            width: 50,
-            height: double.maxFinite,
-            padding: const EdgeInsets.only(
-              right: 20,
-            ),
-            child: Material(
-              color: Theme.of(context).primaryColor,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  InkWell(
-                    borderRadius: BorderRadius.all(
-                      Radius.circular(100.0),
-                    ),
-                    onTap: () {
-                      setState(() {
-                        _rotate = !_rotate;
-                      });
-                    },
-                    child: Icon(
-                      Icons.crop_rotate_outlined,
-                      color: (_rotate) ? Colors.green : Colors.red,
-                    ),
+            width: 60,
+            child: Padding(
+              padding: const EdgeInsets.only(right: 10.0),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () {
+                    setState(() {
+                      _rotate = !_rotate;
+                    });
+                  },
+                  child: Icon(
+                    Icons.crop_rotate_outlined,
+                    color: (_rotate) ? Colors.green : Colors.red,
                   ),
-                ],
+                ),
               ),
             ),
           ),

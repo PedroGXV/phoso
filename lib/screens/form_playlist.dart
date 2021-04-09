@@ -31,9 +31,9 @@ class _FormPlaylistState extends State<FormPlaylist> {
 
   @override
   void initState() {
-    super.initState();
     audioPlayer = AudioPicker();
     _picker = ImagePicker();
+    super.initState();
   }
 
   bool _adding = false;
@@ -64,79 +64,7 @@ class _FormPlaylistState extends State<FormPlaylist> {
             ),
           ),
         ),
-        body: SingleChildScrollView(
-          scrollDirection: Axis.vertical,
-          child: Column(
-            children: [
-              Visibility(
-                visible: _adding,
-                child: Padding(
-                  padding: const EdgeInsets.all(50.0),
-                  child: Center(
-                    child: Loading(msg: 'Adicionando...',),
-                  ),
-                ),
-              ),
-              Visibility(
-                visible: !_adding,
-                child: Container(
-                  color: Theme.of(context).backgroundColor,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.max,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _space(15),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: TextField(
-                          controller: _playlistName,
-                          maxLength: 20,
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Theme.of(context).textTheme.bodyText1.color,
-                          ),
-                          decoration: InputDecoration(
-                            focusedBorder: Theme.of(context)
-                                .inputDecorationTheme
-                                .focusedBorder,
-                            border:
-                                Theme.of(context).inputDecorationTheme.border,
-                            enabledBorder: Theme.of(context)
-                                .inputDecorationTheme
-                                .enabledBorder,
-                            hintText: 'Adicione o nome da playlist',
-                          ),
-                        ),
-                      ),
-                      _buildPickerContainer(
-                        containerTitle: 'Imagem',
-                        context: context,
-                        onTap: () {
-                          _showImagePickOptDialog(context);
-                        },
-                        type: 'image',
-                        icon: Icons.image_search,
-                        description: 'Clique para adicionar imagem',
-                      ),
-                      _buildPickerContainer(
-                        containerTitle: 'Áudio',
-                        context: context,
-                        onTap: () {
-                          _openAudioPicker();
-                        },
-                        type: 'sound',
-                        icon: Icons.my_library_music_outlined,
-                        description: 'Clique para adicionar música',
-                        height: 200,
-                      ),
-                      _space(20),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+        body: _buildBody(),
         bottomNavigationBar: Visibility(
           visible: !_adding,
           child: Container(
@@ -170,6 +98,81 @@ class _FormPlaylistState extends State<FormPlaylist> {
     );
   }
 
+  Widget _buildBody() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.vertical,
+      child: Column(
+        children: [
+          Visibility(
+            visible: _adding,
+            child: Padding(
+              padding: const EdgeInsets.all(50.0),
+              child: Center(
+                child: Loading(
+                  msg: 'Adicionando...',
+                ),
+              ),
+            ),
+          ),
+          Visibility(
+            visible: !_adding,
+            child: Container(
+              color: Theme.of(context).backgroundColor,
+              child: Column(
+                mainAxisSize: MainAxisSize.max,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: TextField(
+                      controller: _playlistName,
+                      maxLength: 20,
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: Theme.of(context).textTheme.bodyText1.color,
+                      ),
+                      decoration: InputDecoration(
+                        focusedBorder: Theme.of(context)
+                            .inputDecorationTheme
+                            .focusedBorder,
+                        border: Theme.of(context).inputDecorationTheme.border,
+                        enabledBorder: Theme.of(context)
+                            .inputDecorationTheme
+                            .enabledBorder,
+                        hintText: 'Adicione o nome da playlist',
+                      ),
+                    ),
+                  ),
+                  _buildPickerContainer(
+                    containerTitle: 'Imagem',
+                    context: context,
+                    onTap: () {
+                      _showImagePickOptDialog(context);
+                    },
+                    type: 'image',
+                    icon: Icons.image_search,
+                    description: 'Clique para adicionar imagem',
+                  ),
+                  _buildPickerContainer(
+                    containerTitle: 'Áudio',
+                    context: context,
+                    onTap: () {
+                      _openAudioPicker();
+                    },
+                    type: 'sound',
+                    icon: Icons.my_library_music_outlined,
+                    description: 'Clique para adicionar música',
+                    height: 200,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<bool> _addPhoso() async {
     if (_audioAbsolutePath != null &&
         _audioAbsolutePath.isNotEmpty &&
@@ -177,7 +180,6 @@ class _FormPlaylistState extends State<FormPlaylist> {
         _imagePath != null &&
         _playlistName.text.isNotEmpty &&
         _playlistName.text.length <= 20) {
-
       setState(() {
         _adding = true;
       });
@@ -205,33 +207,26 @@ class _FormPlaylistState extends State<FormPlaylist> {
       });
 
       return true;
-    } else {
-      CustomDialog(
-        context: context,
-        title: 'Erro ao adicionar!',
-        contents: [
-          ListTile(
-            title: Text('Certifique-se que preencheu todos os campos!'),
-          ),
-        ],
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text('OK!'),
-          ),
-        ],
-      );
     }
+    CustomDialog(
+      context: context,
+      title: 'Erro ao adicionar!',
+      contents: [
+        ListTile(
+          title: Text('Certifique-se que preencheu todos os campos!'),
+        ),
+      ],
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: Text('OK!'),
+        ),
+      ],
+    );
 
     return false;
-  }
-
-  Widget _space(double spaceSize) {
-    return SizedBox(
-      height: spaceSize,
-    );
   }
 
   Widget _buildPickerContainer(

@@ -106,10 +106,14 @@ class PhosoCard extends StatelessWidget {
   CustomDialog _openCardDialog(@required BuildContext context) {
     return CustomDialog(
       context: context,
+      dismissible: true,
       title: photoSound.playlistName,
       contents: [
         Container(
-          color: Colors.redAccent,
+          decoration: BoxDecoration(
+            color: Colors.redAccent,
+            borderRadius: BorderRadius.circular(12),
+          ),
           child: ListTile(
             onTap: () {
               Navigator.of(context).push(
