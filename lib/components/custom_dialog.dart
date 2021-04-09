@@ -14,6 +14,7 @@ class CustomDialog {
   }) {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (dialogContext) {
         return AlertDialog(
           title: Text(

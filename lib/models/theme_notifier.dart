@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phoso/main.dart';
 import '../models/storage_manager.dart';
 
 class ThemeNotifier with ChangeNotifier {
@@ -23,6 +24,9 @@ class ThemeNotifier with ChangeNotifier {
     ),
     iconTheme: IconThemeData(
       color: Colors.white,
+    ),
+    appBarTheme: AppBarTheme(
+      backgroundColor: const Color(0xFF212121),
     ),
     inputDecorationTheme: InputDecorationTheme(
       focusedBorder: OutlineInputBorder(
@@ -79,6 +83,9 @@ class ThemeNotifier with ChangeNotifier {
     ),
     iconTheme: IconThemeData(
       color: Colors.black,
+    ),
+    appBarTheme: AppBarTheme(
+      backgroundColor: const Color(0xFFE5E5E5),
     ),
     inputDecorationTheme: InputDecorationTheme(
       focusedBorder: OutlineInputBorder(
@@ -144,14 +151,20 @@ class ThemeNotifier with ChangeNotifier {
   void setDarkMode() async {
     themeName = 'dark';
     _themeData = darkTheme;
+    PhosoApp.theme = _themeData;
+
     StorageManager.saveData('themeMode', 'dark');
+
     notifyListeners();
   }
 
   void setLightMode() async {
     themeName = _light;
     _themeData = lightTheme;
+    PhosoApp.theme = _themeData;
+
     StorageManager.saveData('themeMode', _light);
+
     notifyListeners();
   }
 }

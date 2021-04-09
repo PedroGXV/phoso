@@ -24,10 +24,42 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
       backgroundColor: Theme.of(context).backgroundColor,
       appBar: AppBar(
         leading: Icon(Icons.home_outlined),
-        title: Text('Home'),
+        title: Text(
+          'Home',
+        ),
       ),
-      body: _buildListView(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      body: Column(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  width: 4,
+                  color: Theme.of(context).primaryColor,
+                ),
+              ),
+            ),
+            child: Column(
+              children: [
+                _optionButton(
+                  'Nova Playlist',
+                  Icons.add,
+                  () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (context) => FormPlaylist())),
+                ),
+                _optionButton(
+                  'Configurações',
+                  Icons.settings,
+                  () => Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) =>
+                          Settings(version: PhosoApp.version))),
+                ),
+              ],
+            ),
+          ),
+          _buildListView(),
+        ],
+      ),
     );
   }
 
@@ -49,122 +81,106 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
             // TODO: Handle this case.
             break;
           case ConnectionState.done:
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                        width: 2,
-                        color: Theme.of(context).primaryColor,
-                      ),
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      _optionButton(
-                        'Nova Playlist',
-                        Icons.add,
-                        () => Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) => FormPlaylist())),
-                      ),
-                      _optionButton(
-                        'Configurações',
-                        Icons.settings,
-                        () => Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) =>
-                                Settings(version: PhosoApp.version))),
-                      ),
-                    ],
-                  ),
-                ),
-                (snapshot.data.length == 0)
-                    ? Center(
-                        child: Padding(
-                          padding: EdgeInsets.only(top: 150),
+            return Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  (snapshot.data.length == 0)
+                      ? Center(
+                          child: Padding(
+                            padding: EdgeInsets.only(top: 150),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.cancel_outlined,
+                                  size: 45,
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 24.0),
+                                  child: Text(
+                                    'Nenhuma playlist criada.',
+                                    style: TextStyle(fontSize: 25),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      : Expanded(
                           child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Icon(
-                                Icons.cancel_outlined,
-                                size: 45,
+                              Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () {
+                                    setState(() {
+                                      _playlistListOpen = !_playlistListOpen;
+                                    });
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(12.0),
+                                    child: Row(
+                                      children: [
+                                        Text(
+                                          'Playlists'.toUpperCase(),
+                                          style: TextStyle(
+                                            fontSize: 17,
+                                            letterSpacing: 1.2,
+                                          ),
+                                        ),
+                                        Icon(
+                                          (_playlistListOpen)
+                                              ? Icons.arrow_drop_up
+                                              : Icons.arrow_drop_down,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
                               ),
-                              Padding(
-                                padding: const EdgeInsets.only(top: 24.0),
-                                child: Text(
-                                  'Nenhuma playlist criada.',
-                                  style: TextStyle(fontSize: 25),
+                              Visibility(
+                                visible: _playlistListOpen,
+                                child: Expanded(
+                                  child: ListView.builder(
+                                    padding: EdgeInsets.all(10),
+                                    itemCount: snapshot.data.length,
+                                    itemBuilder: (context, index) {
+                                      return PhosoCard(
+                                        photoSound: snapshot.data[index],
+                                        onTap: () {
+                                          Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                              builder: (context) => ViewPhoso(
+                                                playlistName: snapshot
+                                                    .data[index].playlistName,
+                                                photoSrc: snapshot
+                                                    .data[index].photoSrc,
+                                                soundSrc: snapshot
+                                                    .data[index].soundSrc,
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      );
+                                    },
+                                  ),
                                 ),
                               ),
                             ],
                           ),
                         ),
-                      )
-                    : Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: () {
-                            setState(() {
-                              _playlistListOpen = !_playlistListOpen;
-                            });
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.only(
-                                left: 12.0, top: 8.0, bottom: 8.0),
-                            child: Row(
-                              children: [
-                                Text(
-                                  'Playlists'.toUpperCase(),
-                                  style: TextStyle(
-                                    fontSize: 17,
-                                    letterSpacing: 1.2,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                                Icon(
-                                  (_playlistListOpen)
-                                      ? Icons.arrow_drop_up
-                                      : Icons.arrow_drop_down,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                // EXPANDED is generated together with Padding
-                Visibility(
-                  visible: _playlistListOpen,
-                  child: Expanded(
-                    child: ListView.builder(
-                      padding: EdgeInsets.all(10),
-                      itemCount: snapshot.data.length,
-                      itemBuilder: (context, index) {
-                        return PhosoCard(
-                          photoSound: snapshot.data[index],
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) => ViewPhoso(
-                                  playlistName:
-                                      snapshot.data[index].playlistName,
-                                  photoSrc: snapshot.data[index].photoSrc,
-                                  soundSrc: snapshot.data[index].soundSrc,
-                                ),
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              ],
+                ],
+              ),
             );
             break;
+          default:
+            return Text('Algo deu errado!');
+            break;
         }
-        return Text('');
+        return Loading();
       },
     );
   }
