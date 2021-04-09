@@ -38,116 +38,120 @@ class _SettingsState extends State<Settings> {
       appBar: AppBar(
         title: Text('Settings'),
       ),
-      body: Column(
-        children: [
-          Visibility(
-            visible: _deleting,
-            child: Padding(
-              padding: const EdgeInsets.all(50.0),
-              child: Loading(
-                msg: 'Deletando...',
-              ),
+      body: _buildBody(),
+    );
+  }
+
+  Widget _buildBody() {
+    return Column(
+      children: [
+        Visibility(
+          visible: _deleting,
+          child: Padding(
+            padding: const EdgeInsets.only(top: 50.0),
+            child: Loading(
+              msg: 'Deletando...',
             ),
           ),
-          Visibility(
-            visible: !_deleting,
-            child: Expanded(
-              child: ListView(
-                children: [
-                  _buildField(
-                    icon: (_theme == 'light')
-                        ? Icons.wb_sunny_outlined
-                        : Icons.nights_stay_outlined,
-                    listTitle: 'Tema',
-                    listSubtitle: (_theme == 'light') ? 'Claro' : 'Escuro',
-                    onTap: () {
+        ),
+        Visibility(
+          visible: !_deleting,
+          child: Expanded(
+            child: ListView(
+              children: [
+                _buildField(
+                  icon: (_theme == 'light')
+                      ? Icons.wb_sunny_outlined
+                      : Icons.nights_stay_outlined,
+                  listTitle: 'Tema',
+                  listSubtitle: (_theme == 'light') ? 'Claro' : 'Escuro',
+                  onTap: () {
+                    setState(() {
+                      if (_theme == 'light') {
+                        PhosoApp.themeNotifier.setDarkMode();
+                      } else {
+                        PhosoApp.themeNotifier.setLightMode();
+                      }
+                    });
+                  },
+                ),
+                _buildField(
+                  listTitle: 'Reset'.toUpperCase(),
+                  listSubtitle: 'Reset all playlists',
+                  icon: Icons.delete_forever,
+                  listColor: Colors.redAccent,
+                  onTap: () async {
+                    setState(() {
+                      _deleting = true;
+                    });
+
+                    await AppDatabase.drop().then((value) {
                       setState(() {
-                        if (_theme == 'light') {
-                          PhosoApp.themeNotifier.setDarkMode();
-                        } else {
-                          PhosoApp.themeNotifier.setLightMode();
-                        }
-                      });
-                    },
-                  ),
-                  _buildField(
-                    listTitle: 'Reset'.toUpperCase(),
-                    listSubtitle: 'Reset all playlists',
-                    icon: Icons.delete_forever,
-                    listColor: Colors.redAccent,
-                    onTap: () async {
-                      setState(() {
-                        _deleting = true;
+                        _deleting = false;
                       });
 
-                      await AppDatabase.drop().then((value) {
-                        setState(() {
-                          _deleting = false;
-                        });
-
-                        CustomDialog(
-                          context: context,
-                          title: 'Deletado!',
-                          contents: [
-                            Icon(
-                              Icons.done_all_outlined,
-                              color: Colors.green,
-                              size: 75,
-                            ),
-                          ],
-                          actions: [
-                            TextButton(
-                              onPressed: () =>
-                                  Navigator.pushNamedAndRemoveUntil(
-                                      context, '/', (_) => false),
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text('OK'),
-                              ),
-                            ),
-                          ],
-                        );
-                      }).onError((error, stackTrace) {
-                        setState(() {
-                          _deleting = false;
-                        });
-
-                        CustomDialog(
-                          context: context,
-                          title: 'Erro!',
-                          contents: [
-                            Icon(
-                              Icons.error,
-                              color: Colors.red,
-                              size: 25,
-                            ),
-                            Text(
-                                'Algo deu errado na exclusão, tente novamente mais tarde.'),
-                          ],
-                          actions: [
-                            TextButton(
-                              onPressed: () =>
-                                  Navigator.pushNamedAndRemoveUntil(
-                                      context, '/', (_) => false),
+                      CustomDialog(
+                        context: context,
+                        title: 'Deletado!',
+                        contents: [
+                          Icon(
+                            Icons.done_all_outlined,
+                            color: Colors.green,
+                            size: 75,
+                          ),
+                        ],
+                        actions: [
+                          TextButton(
+                            onPressed: () =>
+                                Navigator.pushNamedAndRemoveUntil(
+                                    context, '/', (_) => false),
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
                               child: Text('OK'),
                             ),
-                          ],
-                        );
+                          ),
+                        ],
+                      );
+                    }).onError((error, stackTrace) {
+                      setState(() {
+                        _deleting = false;
                       });
-                    },
-                  ),
-                  _buildField(
-                    icon: Icons.info_outline_rounded,
-                    listTitle: 'Version',
-                    listSubtitle: version,
-                    onTap: () {},
-                  ),
-                ],
-              ),
+
+                      CustomDialog(
+                        context: context,
+                        title: 'Erro!',
+                        contents: [
+                          Icon(
+                            Icons.error,
+                            color: Colors.red,
+                            size: 25,
+                          ),
+                          Text(
+                              'Algo deu errado na exclusão, tente novamente mais tarde.'),
+                        ],
+                        actions: [
+                          TextButton(
+                            onPressed: () =>
+                                Navigator.pushNamedAndRemoveUntil(
+                                    context, '/', (_) => false),
+                            child: Text('OK'),
+                          ),
+                        ],
+                      );
+                    });
+                  },
+                ),
+                _buildField(
+                  icon: Icons.info_outline_rounded,
+                  listTitle: 'Version',
+                  listSubtitle: version,
+                  onTap: () {},
+                ),
+              ],
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

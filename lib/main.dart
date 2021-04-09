@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:package_info/package_info.dart';
+import 'package:phoso/database/app_database.dart';
+import 'package:phoso/models/photo_sound.dart';
 import 'package:phoso/models/theme_notifier.dart';
 import 'package:phoso/screens/home.dart';
 import 'package:provider/provider.dart';
@@ -36,11 +38,12 @@ class _PhosoAppState extends State<PhosoApp> {
 
   @override
   Widget build(BuildContext context) {
+    print(AppDatabase.findAll());
+
     return Consumer<ThemeNotifier>(
       builder: (context, theme, child) {
         PhosoApp.theme = theme.getTheme();
         PhosoApp.themeNotifier = theme;
-        // theme = PhosoApp.themeNotifier;
 
         return MaterialApp(
           debugShowCheckedModeBanner: false,

@@ -88,21 +88,20 @@ class _AudioPlayerOptState extends State<AudioPlayerOpt> {
 
   @override
   void initState() {
-    _audioPlayer = new AudioPlayer();
     cache = AudioCache(fixedPlayer: _audioPlayer);
+    cache.load(soundSrc);
+
+    _audioPlayer = new AudioPlayer();
 
     _audioPlayer.onDurationChanged.listen((Duration d) {
       setState(() => musicLength = d);
     });
 
     _audioPlayer.onAudioPositionChanged.listen((Duration p) {
-      setState(() {
-        position = p;
-      });
+      setState(() => position = p);
     });
 
     // load the song to make the playing faster
-    cache.load(soundSrc);
     super.initState();
   }
 

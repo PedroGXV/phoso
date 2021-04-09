@@ -5,16 +5,18 @@ class CustomDialog {
   String title;
   List<Widget> contents;
   List<Widget> actions;
+  bool dismissible;
 
   CustomDialog({
     @required this.context,
     @required this.title,
     this.contents,
     this.actions,
+    this.dismissible,
   }) {
     showDialog(
       context: context,
-      barrierDismissible: false,
+      barrierDismissible: (dismissible) ? dismissible : false,
       builder: (dialogContext) {
         return AlertDialog(
           title: Text(
