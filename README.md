@@ -21,14 +21,15 @@ Lower Versions: Download and use the debug version
 **0.4.0**
 (rev.02)
 
-- Added a new option to add playlists in home screen (removed fab)
-- New Theme Manager! (Easier to understand and manage)
+- New Theme Manager! (Also support for more than only 2 themes)
 - Added dialog feedback in Playlist Add Form (displays success or failure)
 - Generalized dialogs
 - Updated, improved and solved Audio Player Layout
 - Improved settings screen (added the RESET option)
 - Changed home screen (now you can hide the Playlist List and the add Button was updated)
-- Removed Home FAB
+- Removed Home FAB's (created buttons instead)
+- Some theme colors adjusted
+- Bugs solved
 ---
 **0.3.2**
 

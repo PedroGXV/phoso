@@ -14,7 +14,8 @@ void main() {
 }
 
 class PhosoApp extends StatefulWidget {
-  static ThemeNotifier theme;
+  static ThemeData theme;
+  static ThemeNotifier themeNotifier = new ThemeNotifier();
   static String version;
 
   @override
@@ -35,12 +36,14 @@ class _PhosoAppState extends State<PhosoApp> {
 
   @override
   Widget build(BuildContext context) {
-
     return Consumer<ThemeNotifier>(
       builder: (context, theme, child) {
-        PhosoApp.theme = theme;
+        PhosoApp.theme = theme.getTheme();
+        PhosoApp.themeNotifier = theme;
+        // theme = PhosoApp.themeNotifier;
 
         return MaterialApp(
+          debugShowCheckedModeBanner: false,
           theme: theme.getTheme(),
           home: Home(),
         );

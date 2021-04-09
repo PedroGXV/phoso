@@ -43,6 +43,9 @@ class PhosoCard extends StatelessWidget {
             onTap: () {
               onTap();
             },
+            onLongPress: () {
+              _openCardDialog(context);
+            },
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -83,25 +86,7 @@ class PhosoCard extends StatelessWidget {
                     child: InkWell(
                       borderRadius: BorderRadius.circular(100),
                       onTap: () {
-                        CustomDialog(
-                          context: context,
-                          title: photoSound.playlistName,
-                          contents: [
-                            Container(
-                              color: Colors.redAccent,
-                              child: ListTile(
-                                onTap: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            Deleting(idTarget: photoSound.id)),
-                                  );
-                                },
-                                title: Text('Excluir'.toUpperCase()),
-                              ),
-                            ),
-                          ],
-                        );
+                        _openCardDialog(context);
                       },
                       child: Padding(
                         padding: const EdgeInsets.all(15.0),
@@ -115,6 +100,27 @@ class PhosoCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  CustomDialog _openCardDialog(@required BuildContext context) {
+    return CustomDialog(
+      context: context,
+      title: photoSound.playlistName,
+      contents: [
+        Container(
+          color: Colors.redAccent,
+          child: ListTile(
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                    builder: (context) => Deleting(idTarget: photoSound.id)),
+              );
+            },
+            title: Text('Excluir'.toUpperCase()),
+          ),
+        ),
+      ],
     );
   }
 

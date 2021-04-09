@@ -11,8 +11,6 @@ import 'package:phoso/components/loading.dart';
 import 'package:phoso/database/app_database.dart';
 import 'package:phoso/models/photo_sound.dart';
 
-import 'home.dart';
-
 class FormPlaylist extends StatefulWidget {
   static Map<String, bool> _containerOpen = Map();
 
@@ -33,11 +31,12 @@ class _FormPlaylistState extends State<FormPlaylist> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     audioPlayer = AudioPicker();
     _picker = ImagePicker();
   }
+
+  bool _adding = false;
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +44,6 @@ class _FormPlaylistState extends State<FormPlaylist> {
       home: Scaffold(
         backgroundColor: Theme.of(context).backgroundColor,
         appBar: AppBar(
-          backgroundColor: Theme.of(context).primaryColor,
           leading: Material(
             color: Colors.transparent,
             child: InkWell(
@@ -58,6 +56,7 @@ class _FormPlaylistState extends State<FormPlaylist> {
               },
             ),
           ),
+          backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
           title: Text(
             'Adicionar Playlist',
             style: TextStyle(
@@ -67,77 +66,102 @@ class _FormPlaylistState extends State<FormPlaylist> {
         ),
         body: SingleChildScrollView(
           scrollDirection: Axis.vertical,
-          child: Container(
-            color: Theme.of(context).backgroundColor,
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _space(15),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: TextField(
-                    controller: _playlistName,
-                    maxLength: 20,
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Theme.of(context).textTheme.bodyText1.color,
-                    ),
-                    decoration: InputDecoration(
-                      focusedBorder:
-                          Theme.of(context).inputDecorationTheme.focusedBorder,
-                      border: Theme.of(context).inputDecorationTheme.border,
-                      enabledBorder:
-                          Theme.of(context).inputDecorationTheme.enabledBorder,
-                      hintStyle: TextStyle(
-                        color: Theme.of(context)
-                            .inputDecorationTheme
-                            .hintStyle
-                            .color,
-                      ),
-                      hintText: 'Adicione o nome da playlist',
-                    ),
+          child: Column(
+            children: [
+              Visibility(
+                visible: _adding,
+                child: Padding(
+                  padding: const EdgeInsets.all(50.0),
+                  child: Center(
+                    child: Loading(msg: 'Adicionando...',),
                   ),
                 ),
-                _buildPickerContainer(
-                  containerTitle: 'Imagem',
-                  context: context,
-                  onTap: () {
-                    _showImagePickOptDialog(context);
-                  },
-                  type: 'image',
-                  icon: Icons.image_search,
-                  description: 'Clique para adicionar imagem',
+              ),
+              Visibility(
+                visible: !_adding,
+                child: Container(
+                  color: Theme.of(context).backgroundColor,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.max,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _space(15),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: TextField(
+                          controller: _playlistName,
+                          maxLength: 20,
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Theme.of(context).textTheme.bodyText1.color,
+                          ),
+                          decoration: InputDecoration(
+                            focusedBorder: Theme.of(context)
+                                .inputDecorationTheme
+                                .focusedBorder,
+                            border:
+                                Theme.of(context).inputDecorationTheme.border,
+                            enabledBorder: Theme.of(context)
+                                .inputDecorationTheme
+                                .enabledBorder,
+                            hintText: 'Adicione o nome da playlist',
+                          ),
+                        ),
+                      ),
+                      _buildPickerContainer(
+                        containerTitle: 'Imagem',
+                        context: context,
+                        onTap: () {
+                          _showImagePickOptDialog(context);
+                        },
+                        type: 'image',
+                        icon: Icons.image_search,
+                        description: 'Clique para adicionar imagem',
+                      ),
+                      _buildPickerContainer(
+                        containerTitle: 'Áudio',
+                        context: context,
+                        onTap: () {
+                          _openAudioPicker();
+                        },
+                        type: 'sound',
+                        icon: Icons.my_library_music_outlined,
+                        description: 'Clique para adicionar música',
+                        height: 200,
+                      ),
+                      _space(20),
+                    ],
+                  ),
                 ),
-                _buildPickerContainer(
-                  containerTitle: 'Áudio',
-                  context: context,
-                  onTap: () {
-                    _openAudioPicker();
-                  },
-                  type: 'sound',
-                  icon: Icons.my_library_music_outlined,
-                  description: 'Clique para adicionar música',
-                  height: 200,
-                ),
-                _space(20),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
-        bottomNavigationBar: ElevatedButton(
-          style: Theme.of(context).elevatedButtonTheme.style,
-          onPressed: () async => await _addPhoso().then((value) {}).timeout(
-                Duration(seconds: 5),
+        bottomNavigationBar: Visibility(
+          visible: !_adding,
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border(
+                top: BorderSide(
+                  color: Theme.of(context).accentColor,
+                ),
               ),
-          child: Padding(
-            padding: const EdgeInsets.only(top: 20.0, bottom: 20.0),
-            child: Text(
-              'Adicionar'.toUpperCase(),
-              style: TextStyle(
-                letterSpacing: 2,
-                fontSize: 20,
-                color: Theme.of(context).textTheme.bodyText1.color,
+            ),
+            child: ElevatedButton(
+              style: Theme.of(context).elevatedButtonTheme.style,
+              onPressed: () async => await _addPhoso().then((value) {}).timeout(
+                    Duration(seconds: 5),
+                  ),
+              child: Padding(
+                padding: const EdgeInsets.only(top: 20.0, bottom: 20.0),
+                child: Text(
+                  'Adicionar'.toUpperCase(),
+                  style: TextStyle(
+                    letterSpacing: 2,
+                    fontSize: 20,
+                    color: Theme.of(context).textTheme.bodyText1.color,
+                  ),
+                ),
               ),
             ),
           ),
@@ -153,19 +177,20 @@ class _FormPlaylistState extends State<FormPlaylist> {
         _imagePath != null &&
         _playlistName.text.isNotEmpty &&
         _playlistName.text.length <= 20) {
-      CustomDialog(
-        context: context,
-        title: 'Adicionando...',
-        contents: [
-          Loading(),
-        ],
-      );
+
+      setState(() {
+        _adding = true;
+      });
 
       await AppDatabase.save(PhotoSound(
         playlistName: this._playlistName.text,
         soundSrc: this._audioAbsolutePath,
         photoSrc: this._imagePath,
       )).then((value) {
+        setState(() {
+          _adding = false;
+        });
+
         CustomDialog(
           context: context,
           title: 'Adicionado!',
@@ -186,13 +211,14 @@ class _FormPlaylistState extends State<FormPlaylist> {
         title: 'Erro ao adicionar!',
         contents: [
           ListTile(
-            onTap: () => Navigator.of(context).pop(),
             title: Text('Certifique-se que preencheu todos os campos!'),
           ),
         ],
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
             child: Text('OK!'),
           ),
         ],

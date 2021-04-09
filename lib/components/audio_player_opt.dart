@@ -1,4 +1,5 @@
 import 'package:audioplayers/audio_cache.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:phoso/main.dart';
@@ -87,7 +88,6 @@ class _AudioPlayerOptState extends State<AudioPlayerOpt> {
 
   @override
   void initState() {
-    super.initState();
     _audioPlayer = new AudioPlayer();
     cache = AudioCache(fixedPlayer: _audioPlayer);
 
@@ -103,12 +103,12 @@ class _AudioPlayerOptState extends State<AudioPlayerOpt> {
 
     // load the song to make the playing faster
     cache.load(soundSrc);
+    super.initState();
   }
 
   @override
   void setState(fn) {
-    _theme = PhosoApp.theme.getTheme();
-    PhosoApp.theme.currentTheme().then((value) => _themeMode = value);
+    _theme = PhosoApp.theme;
     super.setState(fn);
   }
 
@@ -116,7 +116,6 @@ class _AudioPlayerOptState extends State<AudioPlayerOpt> {
   Widget build(BuildContext context) {
     setUrl(soundSrc);
     setState(() {});
-    print(_themeMode);
 
     return Material(
       borderRadius: BorderRadius.circular(12.0),
@@ -161,19 +160,22 @@ class _AudioPlayerOptState extends State<AudioPlayerOpt> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   _buildAudioOpt(
-                    color: (_theme.primaryColor == Colors.white) ? Colors.black : null,
+                    color: (_theme.primaryColor == Color(0xff000000))
+                        ? Colors.black
+                        : null,
                     onTap: (isPlaying)
                         ? () async {
-                            await pause();
                             setState(() {
                               isPlaying = false;
                             });
+                            pause();
                           }
                         : () async {
-                            await playLocal();
                             setState(() {
                               isPlaying = true;
                             });
+
+                            playLocal();
                           },
                     icon: (isPlaying) ? Icons.pause : Icons.play_arrow,
                   ),
@@ -247,20 +249,17 @@ class _AudioPlayerOptState extends State<AudioPlayerOpt> {
   }
 
   Widget slider() {
-    return Column(
-      mainAxisSize: MainAxisSize.max,
-      children: [
-        Slider.adaptive(
-          activeColor: _theme.sliderTheme.activeTrackColor,
-          inactiveColor: _theme.sliderTheme.inactiveTrackColor,
-          value: position.inSeconds.toDouble(),
-          min: 0,
-          max: musicLength.inSeconds.toDouble(),
-          onChanged: (value) async {
-            seekToSec(value.toInt());
-          },
-        ),
-      ],
+    // the .adaptive display both CupertinoSlider and "Material" Slider
+    // depending on the platform
+    return Slider.adaptive(
+      activeColor: _theme.sliderTheme.activeTrackColor,
+      inactiveColor: _theme.sliderTheme.inactiveTrackColor,
+      value: position.inSeconds.toDouble(),
+      min: 0,
+      max: musicLength.inSeconds.toDouble(),
+      onChanged: (value) async {
+        seekToSec(value.toInt());
+      },
     );
   }
 
