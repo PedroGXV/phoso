@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:phoso/components/custom_dialog.dart';
+import 'package:phoso/components/loading.dart';
+import 'package:phoso/database/app_database.dart';
 import 'package:phoso/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -19,9 +22,8 @@ class _SettingsState extends State<Settings> {
 
   @override
   void setState(fn) {
-    _getCurrentTheme().then((value) {
+    PhosoApp.theme.currentTheme().then((value) {
       _theme = value;
-      print(_theme);
       super.setState(fn);
     });
   }
@@ -37,7 +39,9 @@ class _SettingsState extends State<Settings> {
       body: ListView(
         children: [
           _buildField(
-            icon: (_theme == 'light') ? Icons.wb_sunny_outlined : Icons.nights_stay_outlined,
+            icon: (_theme == 'light')
+                ? Icons.wb_sunny_outlined
+                : Icons.nights_stay_outlined,
             listTitle: 'Tema',
             listSubtitle: (_theme == 'light') ? 'Claro' : 'Escuro',
             onTap: () {
@@ -55,7 +59,53 @@ class _SettingsState extends State<Settings> {
             listSubtitle: 'Reset all playlists',
             icon: Icons.delete_forever,
             listColor: Colors.redAccent,
-            onTap: () {},
+            onTap: () async {
+              CustomDialog(
+                context: context,
+                title: 'Deletando...',
+                contents: [
+                  Loading(),
+                ],
+              );
+              await AppDatabase.drop().then((value) {
+                CustomDialog(
+                  context: context,
+                  title: 'Deletado!',
+                  contents: [
+                    Icon(
+                      Icons.done_all_outlined,
+                      color: Colors.green,
+                      size: 25,
+                    ),
+                  ],
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pushNamedAndRemoveUntil(context, '/', (_) => false),
+                      child: Text('OK'),
+                    ),
+                  ],
+                );
+              }).onError((error, stackTrace) {
+                CustomDialog(
+                  context: context,
+                  title: 'Erro!',
+                  contents: [
+                    Icon(
+                      Icons.error,
+                      color: Colors.red,
+                      size: 25,
+                    ),
+                    Text('Algo deu errado na exclusão, tente novamente mais tarde.'),
+                  ],
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pushNamedAndRemoveUntil(context, '/', (_) => false),
+                      child: Text('OK'),
+                    ),
+                  ],
+                );
+              });
+            },
           ),
           _buildField(
             icon: Icons.info_outline_rounded,
@@ -66,10 +116,6 @@ class _SettingsState extends State<Settings> {
         ],
       ),
     );
-  }
-
-  Future<String> _getCurrentTheme() async {
-    return await PhosoApp.theme.currentTheme();
   }
 
   Widget _buildField(
@@ -86,9 +132,7 @@ class _SettingsState extends State<Settings> {
         },
         child: Container(
           decoration: BoxDecoration(
-            color: (listColor == null)
-                ? Colors.transparent
-                : listColor,
+            color: (listColor == null) ? Colors.transparent : listColor,
             border: Border(
               bottom: BorderSide(
                 color: Theme.of(context).accentColor,

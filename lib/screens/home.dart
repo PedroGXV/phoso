@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:package_info/package_info.dart';
-import 'package:phoso/components/custom_fab.dart';
 import 'package:phoso/components/loading.dart';
 import 'package:phoso/components/phoso_card.dart';
+import 'package:phoso/main.dart';
 import 'package:phoso/screens/settings.dart';
 import 'form_playlist.dart';
 import 'package:phoso/database/app_database.dart';
@@ -15,8 +14,6 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> with TickerProviderStateMixin {
-  bool _deleting = false;
-
   @override
   Widget build(BuildContext context) {
     return _buildHome();
@@ -31,7 +28,6 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
       ),
       body: _buildListView(),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      floatingActionButton: _buildFab(),
     );
   }
 
@@ -65,33 +61,22 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                       ),
                     ),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: ElevatedButton(
-                      style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all(
-                            Theme.of(context).primaryColor),
+                  child: Column(
+                    children: [
+                      _optionButton(
+                        'Nova Playlist',
+                        Icons.add,
+                        () => Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => FormPlaylist())),
                       ),
-                      onPressed: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                              builder: (context) => FormPlaylist())),
-                      child: Row(children: [
-                        Icon(
-                          Icons.add,
-                          color: Theme.of(context).iconTheme.color,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(15.0),
-                          child: Text(
-                            'Nova Playlist',
-                            style: TextStyle(
-                              color:
-                                  Theme.of(context).textTheme.bodyText1.color,
-                            ),
-                          ),
-                        ),
-                      ]),
-                    ),
+                      _optionButton(
+                        'Configurações',
+                        Icons.settings,
+                        () => Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) =>
+                                Settings(version: PhosoApp.version))),
+                      ),
+                    ],
                   ),
                 ),
                 (snapshot.data.length == 0)
@@ -140,8 +125,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                                 ),
                                 Icon(
                                   (_playlistListOpen)
-                                      ? Icons.arrow_drop_down
-                                      : Icons.arrow_drop_up,
+                                      ? Icons.arrow_drop_up
+                                      : Icons.arrow_drop_down,
                                 ),
                               ],
                             ),
@@ -184,50 +169,36 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     );
   }
 
-  bool _fabOpen = false;
-
-  void _toggleFab() {
-    setState(() {
-      _fabOpen = !_fabOpen;
-    });
-  }
-
-  Widget _buildFab() {
-    return SizedBox.expand(
-      child: Container(
-        margin: EdgeInsets.all(10),
-        child: Stack(
-          alignment: Alignment.bottomRight,
-          clipBehavior: Clip.none,
-          children: [
-            CustomFab(
-              icon: (_fabOpen) ? Icons.close : Icons.more_vert_rounded,
-              color: (_fabOpen) ? Colors.redAccent : null,
-              iconColor: (_fabOpen) ? Colors.white : null,
-              onPressed: () => _toggleFab(),
-            ),
-            Visibility(
-              visible: _fabOpen,
-              child: Container(
-                margin: EdgeInsets.only(bottom: 75),
-                child: CustomFab(
-                  icon: Icons.settings,
-                  onPressed: () async {
-                    PackageInfo packageInfo = await PackageInfo.fromPlatform();
-                    String version = packageInfo.version;
-
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                          builder: (context) => Settings(
-                                version: version,
-                              )),
-                    );
-                  },
-                ),
+  Widget _optionButton(
+    String txt,
+    IconData icon,
+    Function onTap,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: ElevatedButton(
+        style: ButtonStyle(
+          backgroundColor:
+              MaterialStateProperty.all(Theme.of(context).primaryColor),
+        ),
+        onPressed: () {
+          onTap();
+        },
+        child: Row(children: [
+          Icon(
+            icon,
+            color: Theme.of(context).iconTheme.color,
+          ),
+          Padding(
+            padding: const EdgeInsets.all(15.0),
+            child: Text(
+              txt,
+              style: TextStyle(
+                color: Theme.of(context).textTheme.bodyText1.color,
               ),
             ),
-          ],
-        ),
+          ),
+        ]),
       ),
     );
   }

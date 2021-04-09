@@ -52,7 +52,7 @@ class ThemeNotifier with ChangeNotifier {
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ButtonStyle(
-        backgroundColor: MaterialStateProperty.all<Color>(Colors.purple),
+        backgroundColor: MaterialStateProperty.all<Color>(Colors.black),
         minimumSize: MaterialStateProperty.all<Size>(Size(
           double.maxFinite,
           50,
@@ -108,7 +108,7 @@ class ThemeNotifier with ChangeNotifier {
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ButtonStyle(
-        backgroundColor: MaterialStateProperty.all<Color>(Colors.deepPurpleAccent),
+        backgroundColor: MaterialStateProperty.all<Color>(Colors.white),
         minimumSize: MaterialStateProperty.all<Size>(Size(
           double.maxFinite,
           50,
@@ -137,8 +137,8 @@ class ThemeNotifier with ChangeNotifier {
     });
   }
 
-  dynamic currentTheme() {
-    return StorageManager.readData('themeMode').then((value) => value);
+  Future<dynamic> currentTheme() async {
+    return await StorageManager.readData('themeMode').then((value) => value);
   }
 
   void setDarkMode() async {

@@ -14,6 +14,8 @@ import 'package:phoso/models/photo_sound.dart';
 import 'home.dart';
 
 class FormPlaylist extends StatefulWidget {
+  static Map<String, bool> _containerOpen = Map();
+
   @override
   _FormPlaylistState createState() => _FormPlaylistState();
 }
@@ -33,14 +35,15 @@ class _FormPlaylistState extends State<FormPlaylist> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    _picker = ImagePicker();
     audioPlayer = AudioPicker();
+    _picker = ImagePicker();
   }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
+        backgroundColor: Theme.of(context).backgroundColor,
         appBar: AppBar(
           backgroundColor: Theme.of(context).primaryColor,
           leading: Material(
@@ -66,15 +69,16 @@ class _FormPlaylistState extends State<FormPlaylist> {
           scrollDirection: Axis.vertical,
           child: Container(
             color: Theme.of(context).backgroundColor,
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(15, 0, 15, 0),
-              child: Column(
-                mainAxisSize: MainAxisSize.max,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _space(15),
-                  TextField(
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _space(15),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextField(
                     controller: _playlistName,
+                    maxLength: 20,
                     style: TextStyle(
                       fontSize: 18,
                       color: Theme.of(context).textTheme.bodyText1.color,
@@ -85,76 +89,55 @@ class _FormPlaylistState extends State<FormPlaylist> {
                       border: Theme.of(context).inputDecorationTheme.border,
                       enabledBorder:
                           Theme.of(context).inputDecorationTheme.enabledBorder,
-                      labelStyle: TextStyle(
-                        color: Theme.of(context)
-                            .inputDecorationTheme
-                            .labelStyle
-                            .color,
-                      ),
                       hintStyle: TextStyle(
                         color: Theme.of(context)
                             .inputDecorationTheme
                             .hintStyle
                             .color,
                       ),
-                      labelText: 'Nome da Playlist',
                       hintText: 'Adicione o nome da playlist',
                     ),
                   ),
-                  _space(15),
-                  Text(
-                    'Imagem',
-                    style: TextStyle(
-                      fontSize: 22,
-                      color: Theme.of(context).textTheme.bodyText1.color,
-                    ),
-                  ),
-                  _space(15),
-                  _buildPickerContainer(
-                    context: context,
-                    onTap: () {
-                      _showImagePickOptDialog(context);
-                    },
-                    type: 'image',
-                    icon: Icons.image_search,
-                    description: 'Clique para adicionar imagem',
-                  ),
-                  _space(15),
-                  Text(
-                    'Áudio',
-                    style: TextStyle(
-                      fontSize: 22,
-                      color: Theme.of(context).textTheme.bodyText1.color,
-                    ),
-                  ),
-                  _space(15),
-                  _buildPickerContainer(
-                    context: context,
-                    onTap: () {
-                      _openAudioPicker();
-                    },
-                    type: 'sound',
-                    icon: Icons.my_library_music_outlined,
-                    description: 'Clique para adicionar música',
-                    height: 200,
-                  ),
-                  _space(25),
-                  ElevatedButton(
-                    style: Theme.of(context).elevatedButtonTheme.style,
-                    onPressed: () async =>
-                        await _addPhoso().then((value) {}).timeout(
-                              Duration(seconds: 5),
-                            ),
-                    child: Text(
-                      'Adicionar'.toUpperCase(),
-                      style: TextStyle(
-                        letterSpacing: 2,
-                        fontSize: 20,
-                      ),
-                    ),
-                  ),
-                  _space(20),
-                ],
+                ),
+                _buildPickerContainer(
+                  containerTitle: 'Imagem',
+                  context: context,
+                  onTap: () {
+                    _showImagePickOptDialog(context);
+                  },
+                  type: 'image',
+                  icon: Icons.image_search,
+                  description: 'Clique para adicionar imagem',
+                ),
+                _buildPickerContainer(
+                  containerTitle: 'Áudio',
+                  context: context,
+                  onTap: () {
+                    _openAudioPicker();
+                  },
+                  type: 'sound',
+                  icon: Icons.my_library_music_outlined,
+                  description: 'Clique para adicionar música',
+                  height: 200,
+                ),
+                _space(20),
+              ],
+            ),
+          ),
+        ),
+        bottomNavigationBar: ElevatedButton(
+          style: Theme.of(context).elevatedButtonTheme.style,
+          onPressed: () async => await _addPhoso().then((value) {}).timeout(
+                Duration(seconds: 5),
+              ),
+          child: Padding(
+            padding: const EdgeInsets.only(top: 20.0, bottom: 20.0),
+            child: Text(
+              'Adicionar'.toUpperCase(),
+              style: TextStyle(
+                letterSpacing: 2,
+                fontSize: 20,
+                color: Theme.of(context).textTheme.bodyText1.color,
               ),
             ),
           ),
@@ -188,7 +171,8 @@ class _FormPlaylistState extends State<FormPlaylist> {
           title: 'Adicionado!',
           actions: [
             TextButton(
-              onPressed: () => Navigator.pushNamedAndRemoveUntil(context, '/', (_) => false),
+              onPressed: () =>
+                  Navigator.pushNamedAndRemoveUntil(context, '/', (_) => false),
               child: Text('OK!'),
             ),
           ],
@@ -203,8 +187,7 @@ class _FormPlaylistState extends State<FormPlaylist> {
         contents: [
           ListTile(
             onTap: () => Navigator.of(context).pop(),
-            title: Text(
-                'Certifique-se que preencheu todos os campos, e o nome tenha menos de 20 caracteres!'),
+            title: Text('Certifique-se que preencheu todos os campos!'),
           ),
         ],
         actions: [
@@ -231,71 +214,121 @@ class _FormPlaylistState extends State<FormPlaylist> {
       @required IconData icon,
       @required String description,
       @required BuildContext context,
+      @required String containerTitle,
       double height}) {
-    return GestureDetector(
-      onTap: () {
-        onTap();
-      },
-      child: Container(
-        color: (_imagePath == null) ? Theme.of(context).backgroundColor : null,
-        width: double.maxFinite,
-        height: (height == null) ? 300 : height,
-        // displaying image as decoration
-        decoration: (_imagePath != null && type == 'image')
-            ? BoxDecoration(
-                image: DecorationImage(
-                  fit: BoxFit.contain,
-                  image: FileImage(
-                    File(_imagePath),
+    if (FormPlaylist._containerOpen[containerTitle] == null) {
+      FormPlaylist._containerOpen.addAll({
+        containerTitle: true,
+      });
+    }
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          setState(() {
+            FormPlaylist._containerOpen[containerTitle] =
+                !FormPlaylist._containerOpen[containerTitle];
+          });
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding:
+                  const EdgeInsets.only(top: 15.0, bottom: 15.0, left: 8.0),
+              child: Row(children: [
+                Text(
+                  containerTitle,
+                  style: TextStyle(
+                    fontSize: 22,
+                    color: Theme.of(context).textTheme.bodyText1.color,
                   ),
                 ),
-                borderRadius: BorderRadius.all(
-                  Radius.circular(10),
+                Icon(
+                  (FormPlaylist._containerOpen[containerTitle])
+                      ? Icons.arrow_drop_up
+                      : Icons.arrow_drop_down,
+                  color: Theme.of(context).iconTheme.color,
                 ),
-                border: Border.all(
-                  color: Theme.of(context).primaryColor,
-                ),
-              )
-            : null,
-        // display add default add layout
-        // or audioPlayerOpt
-        child: (_imagePath != null && type == 'image')
-            ? null
-            : (_audioAbsolutePath != null && type == 'sound')
-                ? AudioPlayerOpt(
-                    soundSrc: this._audioAbsolutePath,
-                    boxDecoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: Theme.of(context).primaryColor,
-                      ),
-                    ),
-                  )
-                : Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      side: BorderSide(
-                        color: Colors.deepPurple,
-                      ),
-                    ),
-                    child: Material(
-                      color: Theme.of(context).backgroundColor,
-                      child: InkWell(
-                        onTap: () {
-                          onTap();
-                        },
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: _buildCardElement(
-                            type: type,
-                            icon: icon,
-                            text: description,
-                          ),
-                        ),
-                      ),
-                    ),
+              ]),
+            ),
+            Visibility(
+              visible: FormPlaylist._containerOpen[containerTitle],
+              child: GestureDetector(
+                onTap: () {
+                  onTap();
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Container(
+                    color: (_imagePath == null) ? Colors.transparent : null,
+                    width: double.maxFinite,
+                    height: (height == null) ? 300 : height,
+                    // displaying image as decoration
+                    decoration: (_imagePath != null && type == 'image')
+                        ? BoxDecoration(
+                            image: DecorationImage(
+                              fit: BoxFit.contain,
+                              image: FileImage(
+                                File(_imagePath),
+                              ),
+                            ),
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(10),
+                            ),
+                            border: Border.all(
+                              color: Theme.of(context).primaryColor,
+                            ),
+                          )
+                        : null,
+                    // display add default add layout
+                    // or audioPlayerOpt
+                    child: (_imagePath != null && type == 'image')
+                        ? null
+                        : (_audioAbsolutePath != null && type == 'sound')
+                            ? AudioPlayerOpt(
+                                soundSrc: this._audioAbsolutePath,
+                                boxDecoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: Theme.of(context).primaryColor,
+                                  ),
+                                ),
+                              )
+                            : Card(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  side: BorderSide(
+                                    color: Colors.deepPurple,
+                                  ),
+                                ),
+                                child: Material(
+                                  color: Theme.of(context).backgroundColor,
+                                  child: InkWell(
+                                    onTap: () {
+                                      onTap();
+                                    },
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: _buildCardElement(
+                                        type: type,
+                                        icon: icon,
+                                        text: description,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
                   ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

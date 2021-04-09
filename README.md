@@ -26,8 +26,9 @@ Lower Versions: Download and use the debug version
 - Added dialog feedback in Playlist Add Form (displays success or failure)
 - Generalized dialogs
 - Updated, improved and solved Audio Player Layout
-- Improved settings screen
+- Improved settings screen (added the RESET option)
 - Changed home screen (now you can hide the Playlist List and the add Button was updated)
+- Removed Home FAB
 ---
 **0.3.2**
 
