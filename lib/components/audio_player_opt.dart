@@ -28,7 +28,8 @@ class AudioPlayerOpt extends StatefulWidget {
 class _AudioPlayerOptState extends State<AudioPlayerOpt> {
   // The class wasn't getting the right Theme in some situations
   // so I just picked the theme through the main file
-  ThemeData _theme = PhosoApp.theme.getTheme();
+  ThemeData _theme;
+  String _themeMode;
 
   bool isPlaying = false;
 
@@ -86,7 +87,6 @@ class _AudioPlayerOptState extends State<AudioPlayerOpt> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _audioPlayer = new AudioPlayer();
     cache = AudioCache(fixedPlayer: _audioPlayer);
@@ -106,14 +106,26 @@ class _AudioPlayerOptState extends State<AudioPlayerOpt> {
   }
 
   @override
+  void setState(fn) {
+    _theme = PhosoApp.theme.getTheme();
+    PhosoApp.theme.currentTheme().then((value) => _themeMode = value);
+    super.setState(fn);
+  }
+
+  @override
   Widget build(BuildContext context) {
     setUrl(soundSrc);
+    setState(() {});
+    print(_themeMode);
 
     return Material(
+      borderRadius: BorderRadius.circular(12.0),
       color: Colors.transparent,
       child: InkWell(
+        borderRadius: BorderRadius.circular(12.0),
         onTap: () {},
         child: Container(
+          color: (boxDecoration == null) ? _theme.backgroundColor : null,
           width: MediaQuery.of(context).size.width,
           decoration: (boxDecoration != null) ? boxDecoration : null,
           padding: EdgeInsets.all(12),
@@ -128,9 +140,6 @@ class _AudioPlayerOptState extends State<AudioPlayerOpt> {
                   color: _theme.textTheme.bodyText1.color,
                 ),
               ),
-              SizedBox(
-                height: 10,
-              ),
               Container(
                 width: 500,
                 child: Column(
@@ -139,8 +148,11 @@ class _AudioPlayerOptState extends State<AudioPlayerOpt> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     slider(),
-                    _buildTimeText('${position.inMinutes}',
-                        '${position.inSeconds.remainder(60)}','${musicLength.inMinutes}','${musicLength.inSeconds.remainder(60)}'),
+                    _buildTimeText(
+                        '${position.inMinutes}',
+                        '${position.inSeconds.remainder(60)}',
+                        '${musicLength.inMinutes}',
+                        '${musicLength.inSeconds.remainder(60)}'),
                   ],
                 ),
               ),
@@ -149,6 +161,7 @@ class _AudioPlayerOptState extends State<AudioPlayerOpt> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   _buildAudioOpt(
+                    color: (_theme.primaryColor == Colors.white) ? Colors.black : null,
                     onTap: (isPlaying)
                         ? () async {
                             await pause();
@@ -204,16 +217,30 @@ class _AudioPlayerOptState extends State<AudioPlayerOpt> {
     @required Function onTap,
     Color color,
   }) {
-    return GestureDetector(
-      onTap: () {
-        onTap();
-      },
-      child: Padding(
-        padding: const EdgeInsets.only(left: 2.0, right: 2.0),
-        child: Icon(
-          icon,
-          size: 60,
-          color: (color != null) ? color : _theme.iconTheme.color,
+    return Padding(
+      padding: const EdgeInsets.only(left: 2.0, right: 2.0, top: 10.0),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12.0),
+          boxShadow: [
+            BoxShadow(
+              color: _theme.primaryColor,
+            ),
+          ],
+        ),
+        child: Material(
+          borderRadius: BorderRadius.circular(12.0),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12.0),
+            onTap: () {
+              onTap();
+            },
+            child: Icon(
+              icon,
+              size: 60,
+              color: (color != null) ? color : _theme.iconTheme.color,
+            ),
+          ),
         ),
       ),
     );

@@ -82,25 +82,27 @@ class PhosoCard extends StatelessWidget {
                     color: Colors.transparent,
                     child: InkWell(
                       borderRadius: BorderRadius.circular(100),
-                      onTap: () => CustomDialog(
-                        context: context,
-                        title: photoSound.playlistName,
-                        contents: [
-                          Container(
-                            color: Colors.redAccent,
-                            child: ListTile(
-                              onTap: () => Navigator.of(context).push(
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        Deleting(idTarget: photoSound.id)),
-                              ).then((value) {
-                                Navigator.of(context).pop();
-                              }),
-                              title: Text('Excluir'.toUpperCase()),
+                      onTap: () {
+                        CustomDialog(
+                          context: context,
+                          title: photoSound.playlistName,
+                          contents: [
+                            Container(
+                              color: Colors.redAccent,
+                              child: ListTile(
+                                onTap: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            Deleting(idTarget: photoSound.id)),
+                                  );
+                                },
+                                title: Text('Excluir'.toUpperCase()),
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        );
+                      },
                       child: Padding(
                         padding: const EdgeInsets.all(15.0),
                         child: Icon(Icons.settings),
