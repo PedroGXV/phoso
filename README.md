@@ -13,7 +13,7 @@ Lower Versions: Download and use the debug version
 
 ## Version
 
-**Current: 0.4.0**
+**Current: 0.5.0**
 
 ## Patches
  
