@@ -14,9 +14,12 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> with TickerProviderStateMixin {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: Theme.of(context).backgroundColor,
       appBar: AppBar(
         title: Text('Home'),
@@ -185,26 +188,26 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                   Visibility(
                     visible: _playlistListOpen,
                     child: Expanded(
-                      child: ListView.builder(
-                        padding: EdgeInsets.all(10),
-                        itemCount: snapshot.data.length,
-                        itemBuilder: (context, index) {
-                          return PhosoCard(
-                            photoSound: snapshot.data[index],
-                            onTap: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => ViewPhoso(
-                                    playlistName:
-                                        snapshot.data[index].playlistName,
-                                    photoSrc: snapshot.data[index].photoSrc,
-                                    soundSrc: snapshot.data[index].soundSrc,
+                      child: Scrollbar(
+                        child: ListView.builder(
+                          padding: EdgeInsets.all(10),
+                          itemCount: snapshot.data.length,
+                          itemBuilder: (context, index) {
+                            return PhosoCard(
+                              globalContext: _scaffoldKey.currentContext,
+                              photoSound: snapshot.data[index],
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => ViewPhoso(
+                                      photoSound: snapshot.data[index],
+                                    ),
                                   ),
-                                ),
-                              );
-                            },
-                          );
-                        },
+                                );
+                              },
+                            );
+                          },
+                        ),
                       ),
                     ),
                   ),

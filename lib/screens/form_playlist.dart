@@ -7,7 +7,10 @@ import 'package:audio_picker/audio_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:phoso/components/audio_player_opt.dart';
 import 'package:phoso/components/custom_dialog.dart';
+import 'package:phoso/components/custom_field.dart';
 import 'package:phoso/components/loading.dart';
+import 'package:phoso/components/pickers.dart';
+import 'package:phoso/components/response_dialogs.dart';
 import 'package:phoso/database/app_database.dart';
 import 'package:phoso/models/photo_sound.dart';
 
@@ -19,6 +22,8 @@ class FormPlaylist extends StatefulWidget {
 }
 
 class _FormPlaylistState extends State<FormPlaylist> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   AudioPicker audioPlayer;
   String _audioAbsolutePath;
 
@@ -42,6 +47,7 @@ class _FormPlaylistState extends State<FormPlaylist> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
+        key: _scaffoldKey,
         backgroundColor: Theme.of(context).backgroundColor,
         appBar: AppBar(
           leading: Material(
@@ -99,6 +105,8 @@ class _FormPlaylistState extends State<FormPlaylist> {
   }
 
   Widget _buildBody() {
+    dynamic pick = new Pickers().createState();
+
     return SingleChildScrollView(
       scrollDirection: Axis.vertical,
       child: Column(
@@ -146,8 +154,14 @@ class _FormPlaylistState extends State<FormPlaylist> {
                   _buildPickerContainer(
                     containerTitle: 'Imagem',
                     context: context,
-                    onTap: () {
-                      _showImagePickOptDialog(context);
+                    onTap: () async {
+                      String imgPath =
+                          await pick.showImagePickOptDialog(context);
+                      print('IMAGE PATH: $imgPath');
+
+                      setState(() {
+                        _imagePath = imgPath;
+                      });
                     },
                     type: 'image',
                     icon: Icons.image_search,
@@ -156,8 +170,12 @@ class _FormPlaylistState extends State<FormPlaylist> {
                   _buildPickerContainer(
                     containerTitle: 'Áudio',
                     context: context,
-                    onTap: () {
-                      _openAudioPicker();
+                    onTap: () async {
+                      String audioPath = await pick.openAudioPicker();
+                      setState(() {
+                        _audioAbsolutePath = audioPath;
+                      });
+                      print(_audioAbsolutePath);
                     },
                     type: 'sound',
                     icon: Icons.my_library_music_outlined,
@@ -184,46 +202,31 @@ class _FormPlaylistState extends State<FormPlaylist> {
         _adding = true;
       });
 
-      await AppDatabase.save(PhotoSound(
-        playlistName: this._playlistName.text,
-        soundSrc: this._audioAbsolutePath,
-        photoSrc: this._imagePath,
-      )).then((value) {
+      await AppDatabase.save(
+        PhotoSound(
+          playlistName: this._playlistName.text,
+          soundSrc: this._audioAbsolutePath,
+          photoSrc: this._imagePath,
+        ),
+      ).then((value) {
         setState(() {
           _adding = false;
         });
 
-        CustomDialog(
+        showDialog(
           context: context,
-          title: 'Adicionado!',
-          actions: [
-            TextButton(
-              onPressed: () =>
-                  Navigator.pushNamedAndRemoveUntil(context, '/', (_) => false),
-              child: Text('OK!'),
-            ),
-          ],
+          builder: (dialogContext) => SuccessDialog(
+            'Playlist adicionada.',
+            title: 'Adicionado!',
+          ),
         );
       });
 
       return true;
     }
-    CustomDialog(
+    showDialog(
       context: context,
-      title: 'Erro ao adicionar!',
-      contents: [
-        ListTile(
-          title: Text('Certifique-se que preencheu todos os campos!'),
-        ),
-      ],
-      actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: Text('OK!'),
-        ),
-      ],
+      builder: (dialogContext) => FailureDialog('Erro ao adicionar playlist.'),
     );
 
     return false;
@@ -237,118 +240,101 @@ class _FormPlaylistState extends State<FormPlaylist> {
       @required BuildContext context,
       @required String containerTitle,
       double height}) {
-    if (FormPlaylist._containerOpen[containerTitle] == null) {
-      FormPlaylist._containerOpen.addAll({
-        containerTitle: true,
-      });
-    }
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () {
-          setState(() {
-            FormPlaylist._containerOpen[containerTitle] =
-                !FormPlaylist._containerOpen[containerTitle];
-          });
-        },
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding:
-                  const EdgeInsets.only(top: 15.0, bottom: 15.0, left: 8.0),
-              child: Row(children: [
-                Text(
-                  containerTitle,
-                  style: TextStyle(
-                    fontSize: 22,
-                    color: Theme.of(context).textTheme.bodyText1.color,
-                  ),
-                ),
-                Icon(
-                  (FormPlaylist._containerOpen[containerTitle])
-                      ? Icons.arrow_drop_up
-                      : Icons.arrow_drop_down,
-                  color: Theme.of(context).iconTheme.color,
-                ),
-              ]),
-            ),
-            Visibility(
-              visible: FormPlaylist._containerOpen[containerTitle],
-              child: GestureDetector(
-                onTap: () {
-                  onTap();
-                },
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Container(
-                    color: (_imagePath == null) ? Colors.transparent : null,
-                    width: double.maxFinite,
-                    height: (height == null) ? 300 : height,
-                    // displaying image as decoration
-                    decoration: (_imagePath != null && type == 'image')
-                        ? BoxDecoration(
-                            image: DecorationImage(
-                              fit: BoxFit.contain,
-                              image: FileImage(
-                                File(_imagePath),
-                              ),
-                            ),
-                            borderRadius: BorderRadius.all(
-                              Radius.circular(10),
-                            ),
-                            border: Border.all(
-                              color: Theme.of(context).primaryColor,
-                            ),
-                          )
-                        : null,
-                    // display add default add layout
-                    // or audioPlayerOpt
-                    child: (_imagePath != null && type == 'image')
-                        ? null
-                        : (_audioAbsolutePath != null && type == 'sound')
-                            ? AudioPlayerOpt(
-                                soundSrc: this._audioAbsolutePath,
-                                boxDecoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(
-                                    color: Theme.of(context).primaryColor,
-                                  ),
-                                ),
-                              )
-                            : Card(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                  side: BorderSide(
-                                    color: Colors.deepPurple,
-                                  ),
-                                ),
-                                child: Material(
-                                  color: Theme.of(context).backgroundColor,
-                                  child: InkWell(
-                                    onTap: () {
-                                      onTap();
-                                    },
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: _buildCardElement(
-                                        type: type,
-                                        icon: icon,
-                                        text: description,
-                                      ),
-                                    ),
-                                  ),
+    return CustomField(
+      globalContext: context,
+      fieldLabel: (type == 'image') ? 'Imagem' : 'Som',
+      fieldTagName: 'FormPlaylist_$type',
+      fieldWidget: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: GestureDetector(
+          onTap: () {
+            onTap();
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(
+              color: (_imagePath == null) ? Colors.transparent : null,
+              width: double.maxFinite,
+              height: 300,
+              // displaying image as decoration
+              decoration: (_imagePath != null && type == 'image')
+                  ? BoxDecoration(
+                      image: DecorationImage(
+                        fit: BoxFit.contain,
+                        image: FileImage(
+                          File(_imagePath),
+                        ),
+                      ),
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(10),
+                      ),
+                      border: Border.all(
+                        color: Theme.of(context).primaryColor,
+                      ),
+                    )
+                  : null,
+              // display add default add layout
+              // or audioPlayerOpt
+              child: (_imagePath != null && type == 'image')
+                  ? null
+                  : (_audioAbsolutePath != null && type == 'sound')
+                      ? Column(
+                          children: [
+                            AudioPlayerOpt(
+                              soundSrc: this._audioAbsolutePath,
+                              boxDecoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: Theme.of(context).primaryColor,
                                 ),
                               ),
-                  ),
-                ),
-              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: ListTile(
+                                title: Text(
+                                  'Para editar a música volte para a tela inicial ou clique em editar (no botão de config) após adicionar.',
+                                  style: TextStyle(
+                                    color: Colors.redAccent,
+                                  ),
+                                ),
+                                leading: Icon(
+                                  Icons.info_outline_rounded,
+                                  color: Colors.redAccent,
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
+                      : Card(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            side: BorderSide(
+                              color: Colors.deepPurple,
+                            ),
+                          ),
+                          child: Material(
+                            color: Theme.of(context).backgroundColor,
+                            child: InkWell(
+                              onTap: () {
+                                onTap();
+                              },
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: _buildCardElement(
+                                  type: type,
+                                  icon: icon,
+                                  text: description,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -385,6 +371,25 @@ class _FormPlaylistState extends State<FormPlaylist> {
     });
   }
 
+  void _showImagePickOptDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => CustomDialog(
+        title: 'Open from',
+        contents: [
+          ListTile(
+            onTap: () => _loadImagePicker(ImageSource.gallery),
+            title: Text('From gallery'),
+          ),
+          ListTile(
+            onTap: () => _loadImagePicker(ImageSource.camera),
+            title: Text('From camera'),
+          )
+        ],
+      ),
+    );
+  }
+
   _loadImagePicker(ImageSource source) async {
     PickedFile picked = await _picker.getImage(source: source);
 
@@ -397,22 +402,5 @@ class _FormPlaylistState extends State<FormPlaylist> {
     }
 
     Navigator.of(context).pop();
-  }
-
-  void _showImagePickOptDialog(BuildContext context) {
-    CustomDialog(
-      context: context,
-      title: 'Open from',
-      contents: [
-        ListTile(
-          onTap: () => _loadImagePicker(ImageSource.gallery),
-          title: Text('From gallery'),
-        ),
-        ListTile(
-          onTap: () => _loadImagePicker(ImageSource.camera),
-          title: Text('From camera'),
-        )
-      ],
-    );
   }
 }

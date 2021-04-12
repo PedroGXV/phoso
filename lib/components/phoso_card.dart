@@ -5,46 +5,42 @@ import 'package:phoso/components/custom_dialog.dart';
 import 'package:phoso/models/hex_color.dart';
 import 'package:phoso/models/photo_sound.dart';
 import 'package:phoso/screens/deleting.dart';
-
-import '../main.dart';
+import 'package:phoso/screens/edit_phoso.dart';
 
 class PhosoCard extends StatelessWidget {
-  Function onTap;
-  PhotoSound photoSound;
-
-  Color bgColor;
-  Color reversedColor;
+  final Function onTap;
+  final PhotoSound photoSound;
+  final BuildContext globalContext;
 
   PhosoCard({
     @required this.onTap,
     @required this.photoSound,
+    this.globalContext,
   });
 
   @override
   Widget build(BuildContext context) {
-    setColors();
-
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 0, 5, 10),
       child: Container(
         height: 70,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(6),
           border: Border.all(
-            color: HexColor.fromHex("#FF1A0926"),
-            width: 1.5,
+            color: Theme.of(context).accentColor,
+            width: 0.7,
           ),
         ),
         child: Material(
           borderRadius: BorderRadius.circular(12),
-          color: Theme.of(context).primaryColor,
+          color: Theme.of(context).backgroundColor,
           child: InkWell(
             borderRadius: BorderRadius.circular(12),
             onTap: () {
               onTap();
             },
             onLongPress: () {
-              _openCardDialog(context);
+              _openCardDialog(context: context);
             },
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -86,7 +82,7 @@ class PhosoCard extends StatelessWidget {
                     child: InkWell(
                       borderRadius: BorderRadius.circular(100),
                       onTap: () {
-                        _openCardDialog(context);
+                        _openCardDialog(context: context);
                       },
                       child: Padding(
                         padding: const EdgeInsets.all(15.0),
@@ -103,33 +99,56 @@ class PhosoCard extends StatelessWidget {
     );
   }
 
-  CustomDialog _openCardDialog(@required BuildContext context) {
-    return CustomDialog(
+  void _openCardDialog({@required BuildContext context}) {
+    // using globalContext to avoid the "Looking to ancestor error" (related to dialog context)
+    context = (globalContext != null) ? globalContext : context;
+
+    showDialog(
       context: context,
-      dismissible: true,
-      title: photoSound.playlistName,
-      contents: [
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.redAccent,
-            borderRadius: BorderRadius.circular(12),
+      builder: (dialogContext) => CustomDialog(
+        dismissible: true,
+        title: photoSound.playlistName,
+        contents: [
+          _cardOptions(
+            optName: 'Editar',
+            optIcon: Icons.edit_outlined,
+            onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => EditPhoso(photoSound: photoSound))),
           ),
-          child: ListTile(
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                    builder: (context) => Deleting(idTarget: photoSound.id)),
-              );
-            },
-            title: Text('Excluir'.toUpperCase()),
-          ),
-        ),
-      ],
+          _cardOptions(
+            optName: 'Excluir',
+            optIcon: Icons.delete_forever,
+            onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => Deleting(idTarget: photoSound.id))),
+            tileColor: Colors.redAccent,
+          )
+        ],
+      ),
     );
   }
 
-  void setColors() {
-    bgColor = Colors.black;
-    reversedColor = Colors.white;
+  Widget _cardOptions({
+    @required String optName,
+    @required IconData optIcon,
+    @required Function onTap,
+    Color tileColor,
+  }) {
+    return Material(
+      color: (tileColor != null) ? tileColor : Colors.transparent,
+      child: ListTile(
+        onTap: () {
+          onTap();
+        },
+        title: Row(
+          children: [
+            Icon(optIcon),
+            Padding(
+              padding: const EdgeInsets.only(left: 12.0),
+              child: Text(optName.toUpperCase()),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

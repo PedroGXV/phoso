@@ -1,43 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:phoso/components/audio_player_opt.dart';
+import 'package:phoso/models/photo_sound.dart';
+import 'package:phoso/screens/edit_phoso.dart';
 import 'dart:io';
 import 'package:photo_view/photo_view.dart';
 
 class ViewPhoso extends StatefulWidget {
-  String playlistName;
-  String photoSrc;
-  String soundSrc;
+  PhotoSound photoSound;
 
-  ViewPhoso({
-    @required this.playlistName,
-    @required this.photoSrc,
-    @required this.soundSrc,
-  });
+  ViewPhoso({@required this.photoSound});
 
   @override
-  _ViewPhosoState createState() => _ViewPhosoState(
-        playlistName: this.playlistName,
-        photoSrc: this.photoSrc,
-        soundSrc: this.soundSrc,
-      );
+  _ViewPhosoState createState() => _ViewPhosoState();
 }
 
 class _ViewPhosoState extends State<ViewPhoso> {
-  String playlistName;
-  String photoSrc;
-  String soundSrc;
-
   double _imageContainerHeight;
   double _imageContainerWidth;
 
   bool _rotate = true;
-  bool _nightMode = false;
-
-  _ViewPhosoState({
-    @required this.playlistName,
-    @required this.photoSrc,
-    @required this.soundSrc,
-  });
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +27,9 @@ class _ViewPhosoState extends State<ViewPhoso> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text((playlistName != null) ? playlistName : 'Playlist name'),
+        title: Text((widget.photoSound.playlistName != null)
+            ? widget.photoSound.playlistName
+            : 'Playlist name'),
         actions: [
           Container(
             width: 60,
@@ -64,6 +47,26 @@ class _ViewPhosoState extends State<ViewPhoso> {
                     Icons.crop_rotate_outlined,
                     color: (_rotate) ? Colors.green : Colors.red,
                   ),
+                ),
+              ),
+            ),
+          ),
+          Container(
+            width: 60,
+            child: Padding(
+              padding: const EdgeInsets.only(right: 10.0),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            EditPhoso(photoSound: widget.photoSound),
+                      ),
+                    );
+                  },
+                  child: Icon(Icons.edit_outlined),
                 ),
               ),
             ),
@@ -92,7 +95,7 @@ class _ViewPhosoState extends State<ViewPhoso> {
                   ),
                 ),
                 imageProvider: FileImage(
-                  File(photoSrc),
+                  File(widget.photoSound.photoSrc),
                 ),
                 minScale: PhotoViewComputedScale.contained * 2,
                 maxScale: PhotoViewComputedScale.contained * 4,
@@ -106,7 +109,7 @@ class _ViewPhosoState extends State<ViewPhoso> {
               alignment: Alignment.bottomCenter,
               padding: EdgeInsets.all(5),
               child: AudioPlayerOpt(
-                soundSrc: soundSrc,
+                soundSrc: widget.photoSound.soundSrc,
               ),
             ),
           ],
