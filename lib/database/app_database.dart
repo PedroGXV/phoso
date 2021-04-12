@@ -58,22 +58,42 @@ class AppDatabase {
 
   static Future<PhotoSound> getWhere(int id) {
     return createDatabase().then((db) {
-      return db.rawQuery("SELECT * FROM photo_sound WHERE id = ?", [id]).then((maps) {
+      return db.rawQuery("SELECT * FROM photo_sound WHERE id = ?", [id]).then(
+          (maps) {
         PhotoSound photoSound;
 
         maps.forEach((element) {
           photoSound = PhotoSound(
-            id: element['id'],
-            playlistName: element['playlistName'],
-            photoSrc: element['photoSrc'],
-            soundSrc: element['soundSrc'],
-            soundName: element['soundName']
-          );
+              id: element['id'],
+              playlistName: element['playlistName'],
+              photoSrc: element['photoSrc'],
+              soundSrc: element['soundSrc'],
+              soundName: element['soundName']);
         });
 
         return photoSound;
       });
     });
+  }
+
+  static Future<void> edit(PhotoSound photoSound) async {
+    // O = OK
+    // 1 = ERROR
+    return createDatabase()
+        .then(
+          (db) {
+            return db.rawQuery(
+              "UPDATE photo_sound SET playlistName = ?, photoSrc = ?, soundSrc = ?, soundName = ? WHERE id = ?",
+              [
+                photoSound.playlistName,
+                photoSound.photoSrc,
+                photoSound.soundSrc,
+                (photoSound.soundName == null) ? '' : photoSound.soundName,
+                photoSound.id
+              ],
+            );
+          },
+        );
   }
 
   static Future<String> drop() async {

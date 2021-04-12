@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:package_info/package_info.dart';
 import 'package:phoso/database/app_database.dart';
 import 'package:phoso/models/photo_sound.dart';
@@ -25,7 +26,7 @@ class PhosoApp extends StatefulWidget {
 }
 
 class _PhosoAppState extends State<PhosoApp> {
-
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -38,7 +39,6 @@ class _PhosoAppState extends State<PhosoApp> {
 
   @override
   Widget build(BuildContext context) {
-    print(AppDatabase.findAll());
 
     return Consumer<ThemeNotifier>(
       builder: (context, theme, child) {

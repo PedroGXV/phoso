@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:phoso/components/custom_dialog.dart';
 import 'package:phoso/components/loading.dart';
+import 'package:phoso/components/response_dialogs.dart';
 import 'package:phoso/database/app_database.dart';
 import 'package:phoso/main.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class Settings extends StatefulWidget {
-  String version;
+  final String version;
 
   Settings({@required this.version});
 
@@ -15,7 +14,7 @@ class Settings extends StatefulWidget {
 }
 
 class _SettingsState extends State<Settings> {
-  String version;
+  final String version;
   String _theme;
 
   _SettingsState({@required this.version});
@@ -90,53 +89,22 @@ class _SettingsState extends State<Settings> {
                         _deleting = false;
                       });
 
-                      CustomDialog(
+                      showDialog(
                         context: context,
-                        title: 'Deletado!',
-                        contents: [
-                          Icon(
-                            Icons.done_all_outlined,
-                            color: Colors.green,
-                            size: 75,
-                          ),
-                        ],
-                        actions: [
-                          TextButton(
-                            onPressed: () =>
-                                Navigator.pushNamedAndRemoveUntil(
-                                    context, '/', (_) => false),
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text('OK'),
-                            ),
-                          ),
-                        ],
+                        builder: (context) => SuccessDialog(
+                          'Todas as playlists foram deletadas.',
+                          title: 'Formatado!',
+                        ),
                       );
                     }).onError((error, stackTrace) {
                       setState(() {
                         _deleting = false;
                       });
 
-                      CustomDialog(
+                      showDialog(
                         context: context,
-                        title: 'Erro!',
-                        contents: [
-                          Icon(
-                            Icons.error,
-                            color: Colors.red,
-                            size: 25,
-                          ),
-                          Text(
-                              'Algo deu errado na exclusão, tente novamente mais tarde.'),
-                        ],
-                        actions: [
-                          TextButton(
-                            onPressed: () =>
-                                Navigator.pushNamedAndRemoveUntil(
-                                    context, '/', (_) => false),
-                            child: Text('OK'),
-                          ),
-                        ],
+                        builder: (context) => FailureDialog(
+                            'Houve um erro ao deletar as playlists!'),
                       );
                     });
                   },
