@@ -10,13 +10,86 @@ class Pickers extends StatefulWidget {
 }
 
 class _PickersState extends State<Pickers> {
-  ImagePicker _picker;
   String _imagePath;
   String _audioPath;
 
   @override
   Widget build(BuildContext context) {
     return Container();
+  }
+
+  Widget audioPickers({
+    @required BuildContext context,
+    @required String defaultFieldText,
+    Function firstOnTap,
+    Function secondOnTap,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 12.0),
+      child: Row(
+        mainAxisSize: MainAxisSize.max,
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _audioPickersOpt(
+            context: context,
+            optTitle: 'Editar nome',
+            onTap: () {
+              firstOnTap();
+            },
+            icon: Icons.edit,
+            optBgColor: Colors.blueGrey.withOpacity(0.7),
+          ),
+          _audioPickersOpt(
+            context: context,
+            optTitle: 'Mudar áudio',
+            onTap: () {
+              secondOnTap();
+            },
+            icon: Icons.audiotrack_outlined,
+            optBgColor: Colors.deepPurpleAccent.withOpacity(0.6),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _audioPickersOpt({
+    @required BuildContext context,
+    @required String optTitle,
+    @required Function onTap,
+    @required IconData icon,
+    @required Color optBgColor,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          onTap();
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            boxShadow: [
+              BoxShadow(
+                color: optBgColor,
+              ),
+            ],
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: Icon(icon),
+                ),
+                Text(optTitle),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   Future<String> openAudioPicker() async {
@@ -30,7 +103,6 @@ class _PickersState extends State<Pickers> {
   Future<String> loadImagePicker(ImageSource source) async {
     PickedFile picked = await ImagePicker().getImage(source: source);
 
-    print(picked.path);
     if (picked != null) {
       return _imagePath = picked.path;
     }

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:audio_picker/audio_picker.dart';
@@ -14,8 +15,23 @@ import 'package:phoso/components/response_dialogs.dart';
 import 'package:phoso/database/app_database.dart';
 import 'package:phoso/models/photo_sound.dart';
 
+enum FormAction { add, edit }
+enum FieldType { text, image, audio }
+
 class FormPlaylist extends StatefulWidget {
   static Map<String, bool> _containerOpen = Map();
+
+  final FormAction formAction;
+  final PhotoSound photoSound;
+
+  FormPlaylist({
+    this.formAction = FormAction.add,
+    this.photoSound,
+  }) {
+    if (formAction == FormAction.edit && photoSound == null) {
+      throw Exception('PhotoSound object can´t be null when FormAction is set to \'edit\'');
+    }
+  }
 
   @override
   _FormPlaylistState createState() => _FormPlaylistState();
@@ -24,77 +40,92 @@ class FormPlaylist extends StatefulWidget {
 class _FormPlaylistState extends State<FormPlaylist> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
+  Map<FieldType, String> _fieldValue = Map();
+
+  // Audio variables
   AudioPicker audioPlayer;
-  String _audioAbsolutePath;
+  String _audioName;
 
   TextEditingController _playlistName = new TextEditingController();
 
-  ImagePicker _picker;
-  String _imagePath;
+  // state helper variables
+  bool _loading = false;
+  bool _fieldError = false;
+  List<FieldType> _fieldsTarget = [];
 
-  PickedFile _pickedImage;
+  // image variables
+  ImagePicker _picker;
+
+  dynamic pick = new Pickers().createState();
 
   @override
   void initState() {
     audioPlayer = AudioPicker();
     _picker = ImagePicker();
+
+    // if already exist a audio, image, text value initialize it
+    if (widget.formAction == FormAction.edit) {
+      _fieldValue.addAll(
+        {
+          FieldType.audio: widget.photoSound.soundSrc,
+          FieldType.image: widget.photoSound.photoSrc,
+          FieldType.text: widget.photoSound.playlistName,
+        },
+      );
+      _playlistName.text = _fieldValue[FieldType.text];
+      _audioName = widget.photoSound.soundName;
+    } else {
+      _fieldValue.addAll(
+        {
+          FieldType.audio: null,
+          FieldType.image: null,
+          FieldType.text: null,
+        },
+      );
+    }
+
     super.initState();
   }
 
-  bool _adding = false;
-
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        key: _scaffoldKey,
-        backgroundColor: Theme.of(context).backgroundColor,
-        appBar: AppBar(
-          leading: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              child: Icon(
-                Icons.arrow_back,
-                color: Theme.of(context).iconTheme.color,
-              ),
-              onTap: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ),
-          backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
-          title: Text(
-            'Adicionar Playlist',
-            style: TextStyle(
-              color: Theme.of(context).textTheme.bodyText1.color,
-            ),
-          ),
+    return Scaffold(
+      key: _scaffoldKey,
+      backgroundColor: Theme.of(context).backgroundColor,
+      appBar: AppBar(
+        title: Text(
+          (widget.formAction == FormAction.add) ? 'Adicionar Playlist' : 'Editar Playlist',
         ),
-        body: _buildBody(),
-        bottomNavigationBar: Visibility(
-          visible: !_adding,
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border(
-                top: BorderSide(
-                  color: Theme.of(context).accentColor,
-                ),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.only(top: 8.0),
+        child: _buildBody(),
+      ),
+      bottomNavigationBar: Visibility(
+        visible: !_loading,
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border(
+              top: BorderSide(
+                color: Theme.of(context).accentColor,
               ),
             ),
-            child: ElevatedButton(
-              style: Theme.of(context).elevatedButtonTheme.style,
-              onPressed: () async => await _addPhoso().then((value) {}).timeout(
+          ),
+          child: ElevatedButton(
+            style: Theme.of(context).elevatedButtonTheme.style,
+            onPressed: () async {
+              await _submitForm().then((value) {}).timeout(
                     Duration(seconds: 5),
-                  ),
-              child: Padding(
-                padding: const EdgeInsets.only(top: 20.0, bottom: 20.0),
-                child: Text(
-                  'Adicionar'.toUpperCase(),
-                  style: TextStyle(
-                    letterSpacing: 2,
-                    fontSize: 20,
-                    color: Theme.of(context).textTheme.bodyText1.color,
-                  ),
+                  );
+            },
+            child: Padding(
+              padding: const EdgeInsets.only(top: 20.0, bottom: 20.0),
+              child: Text(
+                (widget.formAction == FormAction.add) ? 'Adicionar'.toUpperCase() : 'Editar'.toUpperCase(),
+                style: TextStyle(
+                  letterSpacing: 2,
+                  fontSize: 20,
+                  color: Theme.of(context).textTheme.bodyText1.color,
                 ),
               ),
             ),
@@ -105,235 +136,335 @@ class _FormPlaylistState extends State<FormPlaylist> {
   }
 
   Widget _buildBody() {
-    dynamic pick = new Pickers().createState();
-
-    return SingleChildScrollView(
-      scrollDirection: Axis.vertical,
-      child: Column(
-        children: [
-          Visibility(
-            visible: _adding,
-            child: Padding(
-              padding: const EdgeInsets.all(50.0),
-              child: Center(
-                child: Loading(
-                  msg: 'Adicionando...',
+    return Scrollbar(
+      child: SingleChildScrollView(
+        scrollDirection: Axis.vertical,
+        child: Column(
+          children: [
+            Visibility(
+              visible: _loading,
+              child: Padding(
+                padding: const EdgeInsets.all(50.0),
+                child: Center(
+                  child: Loading(
+                    msg: (widget.formAction == FormAction.add) ? 'Adicionando...' : 'Editando...',
+                  ),
                 ),
               ),
             ),
-          ),
-          Visibility(
-            visible: !_adding,
-            child: Container(
-              color: Theme.of(context).backgroundColor,
-              child: Column(
-                mainAxisSize: MainAxisSize.max,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: TextField(
-                      controller: _playlistName,
-                      maxLength: 20,
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Theme.of(context).textTheme.bodyText1.color,
-                      ),
-                      decoration: InputDecoration(
-                        focusedBorder: Theme.of(context)
-                            .inputDecorationTheme
-                            .focusedBorder,
-                        border: Theme.of(context).inputDecorationTheme.border,
-                        enabledBorder: Theme.of(context)
-                            .inputDecorationTheme
-                            .enabledBorder,
-                        hintText: 'Adicione o nome da playlist',
-                      ),
+            Visibility(
+              visible: !_loading,
+              child: Container(
+                color: Theme.of(context).backgroundColor,
+                child: Column(
+                  mainAxisSize: MainAxisSize.max,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildPickerContainer(
+                      type: FieldType.text,
+                      containerTitle: 'Nome da playlist',
+                      description: 'Digite o nome da playlist'
                     ),
-                  ),
-                  _buildPickerContainer(
-                    containerTitle: 'Imagem',
-                    context: context,
-                    onTap: () async {
-                      String imgPath =
-                          await pick.showImagePickOptDialog(context);
-                      print('IMAGE PATH: $imgPath');
+                    _buildPickerContainer(
+                      containerTitle: 'Imagem',
+                      onTap: () async {
+                        String imgPath = await pick.showImagePickOptDialog(context);
+                        print('IMAGE PATH: $imgPath');
 
-                      setState(() {
-                        _imagePath = imgPath;
-                      });
-                    },
-                    type: 'image',
-                    icon: Icons.image_search,
-                    description: 'Clique para adicionar imagem',
-                  ),
-                  _buildPickerContainer(
-                    containerTitle: 'Áudio',
-                    context: context,
-                    onTap: () async {
-                      String audioPath = await pick.openAudioPicker();
-                      setState(() {
-                        _audioAbsolutePath = audioPath;
-                      });
-                      print(_audioAbsolutePath);
-                    },
-                    type: 'sound',
-                    icon: Icons.my_library_music_outlined,
-                    description: 'Clique para adicionar música',
-                    height: 200,
-                  ),
-                ],
+                        setState(() {
+                          // if imgPath is null it means that the user didn't picked a file
+                          if (imgPath != null) {
+                            _fieldValue[FieldType.image] = imgPath;
+                          }
+                        });
+                      },
+                      type: FieldType.image,
+                      icon: Icons.image_search,
+                      description: 'Toque para adicionar imagem',
+                    ),
+                    _buildPickerContainer(
+                      containerTitle: 'Áudio',
+                      onTap: () async {
+                        if (_fieldValue[FieldType.audio] == null) {
+                          String audioPath = await pick.openAudioPicker();
+                          setState(() {
+                            if (audioPath != null) {
+                              _fieldValue[FieldType.audio] = audioPath;
+                            }
+                          });
+                        }
+                      },
+                      type: FieldType.audio,
+                      icon: Icons.my_library_music_outlined,
+                      description: 'Toque para adicionar música',
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  Future<bool> _addPhoso() async {
-    if (_audioAbsolutePath != null &&
-        _audioAbsolutePath.isNotEmpty &&
-        _imagePath.isNotEmpty &&
-        _imagePath != null &&
-        _playlistName.text.isNotEmpty &&
-        _playlistName.text.length <= 20) {
-      setState(() {
-        _adding = true;
-      });
+  Future<bool> _submitForm() async {
+    // using bool return to optimize the code
+    // instead of using if / else, im using two if´s and one return
+    // inside the second if
+    _fieldValue[FieldType.text] = (_playlistName.text.isEmpty) ? null : _playlistName.text;
+    if (!_fieldValue.containsValue(null) && _playlistName.text.length <= 20) {
+      if (widget.formAction == FormAction.add) {
+        await AppDatabase.save(
+          PhotoSound(
+            id: null,
+            playlistName: this._fieldValue[FieldType.text],
+            soundSrc: this._fieldValue[FieldType.audio],
+            photoSrc: this._fieldValue[FieldType.image],
+            soundName: (_audioName == null || _audioName.isEmpty) ? '' : _audioName,
+          ),
+        ).then((value) {
+          setState(() {
+            _loading = false;
+          });
 
-      await AppDatabase.save(
-        PhotoSound(
-          playlistName: this._playlistName.text,
-          soundSrc: this._audioAbsolutePath,
-          photoSrc: this._imagePath,
-        ),
-      ).then((value) {
-        setState(() {
-          _adding = false;
+          showDialog(
+            context: context,
+            builder: (dialogContext) => SuccessDialog(
+              'Playlist adicionada.',
+              buttonFunction: () {
+                Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+              },
+            ),
+          );
         });
 
-        showDialog(
-          context: context,
-          builder: (dialogContext) => SuccessDialog(
-            'Playlist adicionada.',
-            title: 'Adicionado!',
+        return true;
+      } else if (widget.formAction == FormAction.edit) {
+        await AppDatabase.edit(
+          PhotoSound(
+            id: widget.photoSound.id,
+            playlistName: this._fieldValue[FieldType.text],
+            soundSrc: this._fieldValue[FieldType.audio],
+            photoSrc: this._fieldValue[FieldType.image],
+            soundName: (_audioName == null || _audioName.isEmpty) ? '' : _audioName,
           ),
-        );
-      });
+        ).then((value) {
+          // Restarting the route to reload all the PhotoSounds data
+          // because we are editing, so we need to reload the info
+          Navigator.pushNamedAndRemoveUntil(context, '/', (_) => false);
+        });
 
-      return true;
+        return true;
+      }
     }
     showDialog(
       context: context,
-      builder: (dialogContext) => FailureDialog('Erro ao adicionar playlist.'),
+      builder: (dialogContext) =>
+          FailureDialog('Erro ao ${(widget.formAction == FormAction.add) ? 'adicionar' : 'editar'} playlist.'),
     );
+
+    setState(() {
+      print(_fieldsTarget);
+
+      _fieldValue.forEach((key, value) {
+        if (value == null) {
+          if (!_fieldsTarget.contains(key)) {
+            _fieldsTarget.add(key);
+          }
+        }
+      });
+
+      _fieldError = true;
+    });
 
     return false;
   }
 
-  Widget _buildPickerContainer(
-      {@required Function onTap,
-      @required String type,
-      @required IconData icon,
-      @required String description,
-      @required BuildContext context,
-      @required String containerTitle,
-      double height}) {
-    return CustomField(
-      globalContext: context,
-      fieldLabel: (type == 'image') ? 'Imagem' : 'Som',
-      fieldTagName: 'FormPlaylist_$type',
-      fieldWidget: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
+  Widget _buildPickerContainer({
+    @required FieldType type,
+    @required String containerTitle,
+    @required String description,
+    Function onTap,
+    IconData icon = Icons.error_outline,
+  }) {
+    Widget _child = Card(
+      shape: RoundedRectangleBorder(
+        side: BorderSide(
+          color: Theme.of(context).accentColor,
         ),
-        child: GestureDetector(
+      ),
+      child: Material(
+        color: Theme.of(context).backgroundColor,
+        child: InkWell(
           onTap: () {
-            onTap();
+            if (onTap != null) {
+              onTap();
+            }
           },
           child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Container(
-              color: (_imagePath == null) ? Colors.transparent : null,
-              width: double.maxFinite,
-              height: 300,
-              // displaying image as decoration
-              decoration: (_imagePath != null && type == 'image')
-                  ? BoxDecoration(
-                      image: DecorationImage(
-                        fit: BoxFit.contain,
-                        image: FileImage(
-                          File(_imagePath),
-                        ),
-                      ),
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(10),
-                      ),
-                      border: Border.all(
-                        color: Theme.of(context).primaryColor,
-                      ),
-                    )
-                  : null,
-              // display add default add layout
-              // or audioPlayerOpt
-              child: (_imagePath != null && type == 'image')
-                  ? null
-                  : (_audioAbsolutePath != null && type == 'sound')
-                      ? Column(
-                          children: [
-                            AudioPlayerOpt(
-                              soundSrc: this._audioAbsolutePath,
-                              boxDecoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
-                                  color: Theme.of(context).primaryColor,
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: ListTile(
-                                title: Text(
-                                  'Para editar a música volte para a tela inicial ou clique em editar (no botão de config) após adicionar.',
-                                  style: TextStyle(
-                                    color: Colors.redAccent,
-                                  ),
-                                ),
-                                leading: Icon(
-                                  Icons.info_outline_rounded,
-                                  color: Colors.redAccent,
-                                ),
-                              ),
-                            ),
-                          ],
-                        )
-                      : Card(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            side: BorderSide(
-                              color: Colors.deepPurple,
-                            ),
-                          ),
-                          child: Material(
-                            color: Theme.of(context).backgroundColor,
-                            child: InkWell(
-                              onTap: () {
-                                onTap();
-                              },
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: _buildCardElement(
-                                  type: type,
-                                  icon: icon,
-                                  text: description,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
+            padding: const EdgeInsets.all(32.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: _buildCardElement(
+                icon: icon,
+                text: description,
+              ),
             ),
+          ),
+        ),
+      ),
+    );
+
+    // if audio field
+    if (_fieldValue[FieldType.audio] != null && type == FieldType.audio) {
+      _child = Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          pick.audioPickers(
+            context: context,
+            defaultFieldText: 'defaultFieldText',
+            firstOnTap: () {
+              TextEditingController _audioNameController = new TextEditingController();
+
+              showDialog(
+                context: context,
+                builder: (dialogContext) {
+                  return CustomDialog(
+                    title: 'Digite o nome do áudio',
+                    contents: [
+                      TextField(
+                        controller: _audioNameController,
+                        maxLines: 1,
+                        maxLength: 100,
+                      ),
+                    ],
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(dialogContext).pop();
+                        },
+                        child: Text(
+                          'Cancelar'.toUpperCase(),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(dialogContext).pop();
+                          setState(() {
+                            if (_audioNameController.text != null) {
+                              _audioName = _audioNameController.text;
+                            }
+                          });
+                        },
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.all<Color>(Colors.green),
+                        ),
+                        child: Text(
+                          'Concluir'.toUpperCase(),
+                          style: TextStyle(
+                            color: Theme.of(context).accentColor,
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+            secondOnTap: () async {
+              String _newAudioPath = await pick.openAudioPicker();
+              setState(() {
+                if (_newAudioPath != null) {
+                  _fieldValue[FieldType.audio] = _newAudioPath;
+                }
+              });
+            },
+          ),
+          AudioPlayerOpt(
+            globalContext: context,
+            soundSrc: this._fieldValue[FieldType.audio],
+            soundName: (_audioName == null) ? '' : _audioName,
+          ),
+        ],
+      );
+    }
+
+    if (_fieldValue[FieldType.image] != null && type == FieldType.image) {
+      _child = Stack(
+        alignment: Alignment.center,
+        children: [
+          Center(
+            child: Image.file(
+              File(_fieldValue[FieldType.image]),
+              height: 300,
+              fit: BoxFit.contain,
+            ),
+          ),
+          Center(
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                color: Theme.of(context).backgroundColor.withOpacity(0.4),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(14.0),
+                child: Icon(Icons.edit),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    if (type == FieldType.text) {
+      _child = TextField(
+        controller: _playlistName,
+        maxLength: 20,
+        style: TextStyle(
+          fontSize: 18,
+          color: Theme.of(context).textTheme.bodyText1.color,
+        ),
+        decoration: InputDecoration(
+          focusedBorder: Theme.of(context).inputDecorationTheme.focusedBorder,
+          border: Theme.of(context).inputDecorationTheme.border,
+          enabledBorder: Theme.of(context).inputDecorationTheme.enabledBorder,
+          hintStyle: Theme.of(context).inputDecorationTheme.hintStyle,
+          hintText: description,
+        ),
+      );
+    }
+
+    return CustomField(
+      globalContext: context,
+      fieldLabel: containerTitle,
+      fieldTagName: 'FormPlaylist_${type.toString()}',
+      fieldWidget: Container(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 8.0),
+          child: Column(
+            children: [
+              (_fieldError)
+                  ? (_fieldsTarget.contains(type))
+                      ? _fieldWarning('Certifique-se de preencher este campo.')
+                      : SizedBox()
+                  : SizedBox(),
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () {
+                    onTap();
+                  },
+                  child: Container(
+                    width: double.maxFinite,
+                    // display add layout
+                    // or audioPlayerOpt if it has a [audioAbsoluteFilePath]
+                    child: _child,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -341,7 +472,6 @@ class _FormPlaylistState extends State<FormPlaylist> {
   }
 
   List<Widget> _buildCardElement({
-    @required String type,
     @required IconData icon,
     @required String text,
   }) {
@@ -361,46 +491,19 @@ class _FormPlaylistState extends State<FormPlaylist> {
     ];
   }
 
-  _openAudioPicker() async {
-    // showLoading();
-    var path = await AudioPicker.pickAudio();
-    // dismissLoading();
-    setState(() {
-      print(path);
-      _audioAbsolutePath = path;
-    });
-  }
-
-  void _showImagePickOptDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => CustomDialog(
-        title: 'Open from',
-        contents: [
-          ListTile(
-            onTap: () => _loadImagePicker(ImageSource.gallery),
-            title: Text('From gallery'),
-          ),
-          ListTile(
-            onTap: () => _loadImagePicker(ImageSource.camera),
-            title: Text('From camera'),
-          )
-        ],
+  Widget _fieldWarning(String message) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: ListTile(
+        leading: Icon(
+          Icons.info_outline_rounded,
+          color: Colors.redAccent,
+        ),
+        title: Text(
+          message,
+          style: TextStyle(color: Colors.redAccent),
+        ),
       ),
     );
-  }
-
-  _loadImagePicker(ImageSource source) async {
-    PickedFile picked = await _picker.getImage(source: source);
-
-    if (picked != null) {
-      setState(() {
-        print('PICKED:  ${picked.path} \n');
-        _imagePath = picked.path;
-        _pickedImage = picked;
-      });
-    }
-
-    Navigator.of(context).pop();
   }
 }

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:phoso/components/audio_player_opt.dart';
 import 'package:phoso/models/photo_sound.dart';
-import 'package:phoso/screens/edit_phoso.dart';
+import 'package:phoso/screens/form_playlist.dart';
 import 'dart:io';
 import 'package:photo_view/photo_view.dart';
 
 class ViewPhoso extends StatefulWidget {
-  PhotoSound photoSound;
+  final PhotoSound photoSound;
 
   ViewPhoso({@required this.photoSound});
 
@@ -27,9 +27,11 @@ class _ViewPhosoState extends State<ViewPhoso> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text((widget.photoSound.playlistName != null)
-            ? widget.photoSound.playlistName
-            : 'Playlist name'),
+        title: Text(
+          (widget.photoSound.playlistName != null)
+              ? widget.photoSound.playlistName
+              : 'Playlist name',
+        ),
         actions: [
           Container(
             width: 60,
@@ -61,8 +63,10 @@ class _ViewPhosoState extends State<ViewPhoso> {
                   onTap: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) =>
-                            EditPhoso(photoSound: widget.photoSound),
+                        builder: (context) => FormPlaylist(
+                          formAction: FormAction.edit,
+                          photoSound: widget.photoSound,
+                        ),
                       ),
                     );
                   },
@@ -109,7 +113,8 @@ class _ViewPhosoState extends State<ViewPhoso> {
               alignment: Alignment.bottomCenter,
               padding: EdgeInsets.all(5),
               child: AudioPlayerOpt(
-                soundSrc: widget.photoSound.soundSrc,
+                globalContext: context,
+                photoSound: widget.photoSound,
               ),
             ),
           ],

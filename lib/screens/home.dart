@@ -2,11 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:phoso/components/loading.dart';
 import 'package:phoso/components/phoso_card.dart';
 import 'package:phoso/main.dart';
+import 'package:phoso/screens/deleting.dart';
+import 'package:phoso/screens/search.dart';
 import 'package:phoso/screens/settings.dart';
 import 'form_playlist.dart';
 import 'package:phoso/database/app_database.dart';
 import 'package:phoso/screens/view_phoso.dart';
 import '../models/photo_sound.dart';
+import 'dart:math' as math;
+
+enum SortBy { none, alphabetAsc, alphabetDesc, recent, older }
 
 class Home extends StatefulWidget {
   @override
@@ -14,15 +19,69 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> with TickerProviderStateMixin {
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _cardEditable;
+
+  SortBy sortBy;
+  String orderBy;
+
+  @override
+  void initState() {
+    sortBy = SortBy.none;
+    super.initState();
+  }
+
+  @override
+  void setState(fn) {
+    super.setState(fn);
+
+    if (sortBy == SortBy.none) {
+      orderBy = null;
+    }
+    if (sortBy == SortBy.alphabetAsc) {
+      // sqflite uses ASC by default
+      orderBy = 'playlistName DESC';
+    }
+    if (sortBy == SortBy.alphabetDesc) {
+      orderBy = 'playlistName';
+    }
+    if (sortBy == SortBy.recent) {
+      orderBy = 'id DESC';
+    }
+    if (sortBy == SortBy.older) {
+      orderBy = 'id';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
-      key: _scaffoldKey,
       backgroundColor: Theme.of(context).backgroundColor,
       appBar: AppBar(
         title: Text('Home'),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(4.0, 8.0, 12.0, 8.0),
+            child: Material(
+              borderRadius: BorderRadius.circular(100),
+              color: Theme.of(context).primaryColor,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(100),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => Search(),
+                    ),
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Icon(Icons.search_rounded),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
       body: _buildBody(),
     );
@@ -36,7 +95,9 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.max,
-            children: [_buildListView()],
+            children: [
+              _buildListView(),
+            ],
           ),
         ),
       ],
@@ -60,62 +121,60 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
           _optionButton(
             _newPlaylist,
             Icons.add,
-            () => Navigator.of(context)
-                .push(MaterialPageRoute(builder: (context) => FormPlaylist())),
+            () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => FormPlaylist()),
+            ),
             iconColor: Colors.blueAccent,
             fontColor: Colors.blueAccent,
           ),
           _optionButton(
             _configs,
             Icons.settings,
-            () => Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => Settings(version: PhosoApp.version))),
+            () => Navigator.of(context)
+                .push(MaterialPageRoute(builder: (context) => Settings(globalContext: context, version: PhosoApp.version))),
           ),
         ],
       ),
     );
   }
 
-  Widget _optionButton(String txt, IconData icon, Function onTap,
-      {Color fontColor, Color iconColor}) {
+  Widget _optionButton(String txt, IconData icon, Function onTap, {Color fontColor, Color iconColor}) {
     return Material(
-      color: Colors.transparent,
+      color: Theme.of(context).primaryColor,
       child: InkWell(
         onTap: () {
           onTap();
         },
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(children: [
-            Icon(
-              icon,
-              color: (iconColor != null)
-                  ? iconColor
-                  : Theme.of(context).iconTheme.color,
-            ),
-            Padding(
-              padding: const EdgeInsets.all(15.0),
-              child: Text(
-                txt,
-                style: TextStyle(
-                  color: (fontColor != null)
-                      ? fontColor
-                      : Theme.of(context).textTheme.bodyText1.color,
+          padding: const EdgeInsets.fromLTRB(14.0, 10.0, 10.0, 10.0),
+          child: Row(
+            children: [
+              Icon(
+                icon,
+                size: 25,
+                color: (iconColor != null) ? iconColor : Theme.of(context).iconTheme.color,
+              ),
+              Padding(
+                padding: const EdgeInsets.all(15.0),
+                child: Text(
+                  txt,
+                  style: TextStyle(
+                    color: (fontColor != null) ? fontColor : Theme.of(context).textTheme.bodyText1.color,
+                    fontSize: 18,
+                  ),
                 ),
               ),
-            ),
-          ]),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  bool _playlistListOpen = true;
-
   Widget _buildListView() {
     return FutureBuilder<List<PhotoSound>>(
       initialData: [],
-      future: AppDatabase.findAll(),
+      future: AppDatabase.findAll(orderBy: orderBy),
       builder: (BuildContext context, snapshot) {
         switch (snapshot.connectionState) {
           case ConnectionState.none:
@@ -128,6 +187,18 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
             // TODO: Handle this case.
             break;
           case ConnectionState.done:
+            if (snapshot.data == null) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(8.0, 30.0, 8.0, 8.0),
+                  child: Text(
+                    'Houve um erro no banco de dados. Tente reinstalar o app, ou contacte o suporte.',
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              );
+            }
+
             if (snapshot.data.length == 0) {
               return Center(
                 child: Padding(
@@ -155,59 +226,148 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
 
             return Expanded(
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () {
-                        setState(() {
-                          _playlistListOpen = !_playlistListOpen;
-                        });
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: Row(
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(14.0, 6.0, 14.0, 6.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Playlists',
+                          style: TextStyle(
+                            fontSize: 17,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                        Row(
                           children: [
-                            Text(
-                              'Playlists'.toUpperCase(),
-                              style: TextStyle(
-                                fontSize: 17,
-                                letterSpacing: 1.2,
+                            PopupMenuButton<SortBy>(
+                              shape: Border.all(
+                                color: Theme.of(context).accentColor,
                               ),
-                            ),
-                            Icon(
-                              (_playlistListOpen)
-                                  ? Icons.arrow_drop_up
-                                  : Icons.arrow_drop_down,
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Row(
+                                  children: [
+                                    Text('Organizar por'),
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 4.0),
+                                      child: Icon(Icons.sort_outlined),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              onSelected: (SortBy value) {
+                                setState(() {
+                                  sortBy = value;
+                                });
+                              },
+                              itemBuilder: (BuildContext context) => <PopupMenuEntry<SortBy>>[
+                                PopupMenuItem<SortBy>(
+                                  value: SortBy.recent,
+                                  child: _popUpMenuItemChild(
+                                    'Recente',
+                                    '🗓️',
+                                  ),
+                                ),
+                                PopupMenuItem<SortBy>(
+                                  value: SortBy.older,
+                                  child: _popUpMenuItemChild(
+                                    'Mais velho',
+                                    '🗓️',
+                                  ),
+                                ),
+                                PopupMenuItem<SortBy>(
+                                  value: SortBy.alphabetAsc,
+                                  child: _popUpMenuItemChild(
+                                    'Alfabético',
+                                    'A-Z',
+                                  ),
+                                ),
+                                PopupMenuItem<SortBy>(
+                                  value: SortBy.alphabetDesc,
+                                  child: _popUpMenuItemChild(
+                                    'Alfabético',
+                                    'Z-A',
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                      ),
+                      ],
                     ),
                   ),
-                  Visibility(
-                    visible: _playlistListOpen,
-                    child: Expanded(
-                      child: Scrollbar(
-                        child: ListView.builder(
-                          padding: EdgeInsets.all(10),
-                          itemCount: snapshot.data.length,
-                          itemBuilder: (context, index) {
-                            return PhosoCard(
-                              globalContext: _scaffoldKey.currentContext,
+                  (_cardEditable != null)
+                      ? Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            _playlistListOptions(
+                              color: Colors.redAccent.withOpacity(0.5),
+                              onTap: () => Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) => Deleting(idTarget: PhosoCard.targets),
+                                ),
+                              ),
+                              title: 'Excluir',
+                              icon: Icons.delete_sweep_outlined,
+                            ),
+                            _playlistListOptions(
+                              color: Colors.grey.withOpacity(0.5),
+                              onTap: () {
+                                setState(() {
+                                  PhosoCard.targets.clear();
+                                  _cardEditable = null;
+                                });
+                              },
+                              title: 'Cancelar',
+                              icon: Icons.cancel,
+                            ),
+                          ],
+                        )
+                      : SizedBox(),
+                  Expanded(
+                    child: Scrollbar(
+                      isAlwaysShown: true,
+                      radius: Radius.circular(100),
+                      child: ListView.builder(
+                        padding: EdgeInsets.fromLTRB(10.0, 0, 10.0, 0),
+                        itemCount: snapshot.data.length,
+                        itemBuilder: (context, index) {
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+                            child: PhosoCard(
+                              globalContext: context,
                               photoSound: snapshot.data[index],
                               onTap: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (context) => ViewPhoso(
-                                      photoSound: snapshot.data[index],
-                                    ),
-                                  ),
-                                );
+                                // if editable is not null do not open the ViewPhoso screen
+                                // instead, handle the multiple selection PhosoCard
+                                (_cardEditable != null)
+                                    ? (PhosoCard.targets.contains(snapshot.data[index].id))
+                                        ? PhosoCard.targets.remove(snapshot.data[index].id)
+                                        : PhosoCard.targets.add(snapshot.data[index].id)
+                                    : Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (context) => ViewPhoso(
+                                            photoSound: snapshot.data[index],
+                                          ),
+                                        ),
+                                      );
                               },
-                            );
-                          },
-                        ),
+                              onLongPress: () {
+                                setState(() {
+                                  _cardEditable = false;
+                                  if (!PhosoCard.targets.contains(snapshot.data[index].id)) {
+                                    PhosoCard.targets.add(snapshot.data[index].id);
+                                  }
+                                });
+                              },
+                              deleteTarget: _cardEditable,
+                            ),
+                          );
+                        },
                       ),
                     ),
                   ),
@@ -222,6 +382,63 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
         }
         return Loading();
       },
+    );
+  }
+
+  Widget _popUpMenuItemChild(
+    String itemName,
+    String itemDesc,
+  ) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(itemName),
+        Text(
+          itemDesc,
+          style: TextStyle(color: Colors.grey),
+        ),
+      ],
+    );
+  }
+
+  Widget _playlistListOptions({
+    @required Color color,
+    @required Function onTap,
+    @required String title,
+    @required IconData icon,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Material(
+        color: color,
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          onTap: () {
+            onTap();
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                Text(
+                  title.toUpperCase(),
+                  style: TextStyle(
+                    fontSize: 17,
+                    color: Colors.white,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: Icon(
+                    icon,
+                    color: Colors.white,
+                  ),
+                )
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

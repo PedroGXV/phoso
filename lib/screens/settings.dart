@@ -3,141 +3,100 @@ import 'package:phoso/components/loading.dart';
 import 'package:phoso/components/response_dialogs.dart';
 import 'package:phoso/database/app_database.dart';
 import 'package:phoso/main.dart';
+import 'package:phoso/models/photo_sound.dart';
+import 'package:phoso/screens/deleting.dart';
 
 class Settings extends StatefulWidget {
   final String version;
+  final BuildContext globalContext;
 
-  Settings({@required this.version});
+  Settings({
+    @required this.globalContext,
+    @required this.version,
+  });
 
   @override
-  _SettingsState createState() => _SettingsState(version: version);
+  _SettingsState createState() => _SettingsState();
 }
 
 class _SettingsState extends State<Settings> {
-  final String version;
-  String _theme;
 
-  _SettingsState({@required this.version});
-
-  @override
-  void setState(fn) {
-    PhosoApp.themeNotifier.currentTheme().then((value) {
-      _theme = value;
-      super.setState(fn);
-    });
-  }
-
-  bool _deleting = false;
 
   @override
   Widget build(BuildContext context) {
-    setState(() {});
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Settings'),
-      ),
-      body: _buildBody(),
+    return FutureBuilder<dynamic>(
+      future: PhosoApp.themeNotifier.currentTheme(),
+      initialData: null,
+      builder: (context, snapshot) {
+        return Scaffold(
+          appBar: AppBar(
+            title: Text('Settings'),
+          ),
+          body: _buildBody(snapshot.data),
+        );
+      }
     );
   }
 
-  Widget _buildBody() {
-    return Column(
+  Widget _buildBody(dynamic theme) {
+    return ListView(
       children: [
-        Visibility(
-          visible: _deleting,
-          child: Padding(
-            padding: const EdgeInsets.only(top: 50.0),
-            child: Loading(
-              msg: 'Deletando...',
-            ),
-          ),
+        _buildField(
+          icon: (theme == 'light') ? Icons.wb_sunny_outlined : Icons.nights_stay_outlined,
+          listTitle: 'Tema',
+          listSubtitle: (theme == 'light') ? 'Claro' : 'Escuro',
+          onTap: () {
+            setState(() {
+              if (theme == 'light') {
+                PhosoApp.themeNotifier.setDarkMode();
+              } else {
+                PhosoApp.themeNotifier.setLightMode();
+              }
+            });
+          },
         ),
-        Visibility(
-          visible: !_deleting,
-          child: Expanded(
-            child: ListView(
-              children: [
-                _buildField(
-                  icon: (_theme == 'light')
-                      ? Icons.wb_sunny_outlined
-                      : Icons.nights_stay_outlined,
-                  listTitle: 'Tema',
-                  listSubtitle: (_theme == 'light') ? 'Claro' : 'Escuro',
-                  onTap: () {
-                    setState(() {
-                      if (_theme == 'light') {
-                        PhosoApp.themeNotifier.setDarkMode();
-                      } else {
-                        PhosoApp.themeNotifier.setLightMode();
-                      }
-                    });
-                  },
-                ),
-                _buildField(
-                  listTitle: 'Reset'.toUpperCase(),
-                  listSubtitle: 'Reset all playlists',
-                  icon: Icons.delete_forever,
-                  listColor: Colors.redAccent,
-                  onTap: () async {
-                    setState(() {
-                      _deleting = true;
-                    });
+        _buildField(
+          listTitle: 'Reset'.toUpperCase(),
+          listSubtitle: 'Reset all playlists',
+          icon: Icons.delete_forever,
+          listColor: Colors.redAccent,
+          onTap: () {
+            final List<int> resetList = [1];
 
-                    await AppDatabase.drop().then((value) {
-                      setState(() {
-                        _deleting = false;
-                      });
+            PhotoSound.phoso.forEach((element) {
+              resetList.add(element.id);
+            });
 
-                      showDialog(
-                        context: context,
-                        builder: (context) => SuccessDialog(
-                          'Todas as playlists foram deletadas.',
-                          title: 'Formatado!',
-                        ),
-                      );
-                    }).onError((error, stackTrace) {
-                      setState(() {
-                        _deleting = false;
-                      });
-
-                      showDialog(
-                        context: context,
-                        builder: (context) => FailureDialog(
-                            'Houve um erro ao deletar as playlists!'),
-                      );
-                    });
-                  },
-                ),
-                _buildField(
-                  icon: Icons.info_outline_rounded,
-                  listTitle: 'Version',
-                  listSubtitle: version,
-                  onTap: () {},
-                ),
-              ],
-            ),
-          ),
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => Deleting(idTarget: resetList)),
+            );
+          },
+        ),
+        _buildField(
+          icon: Icons.info_outline_rounded,
+          listTitle: 'Version',
+          listSubtitle: widget.version,
+          onTap: () {},
         ),
       ],
     );
   }
 
-  Widget _buildField(
-      {@required String listTitle,
-      String listSubtitle,
-      @required Function onTap,
-      IconData icon,
-      Color listColor}) {
+  Widget _buildField({
+    @required String listTitle,
+    String listSubtitle,
+    @required Function onTap,
+    IconData icon,
+    Color listColor,
+  }) {
     return Material(
-      color: Theme.of(context).backgroundColor,
+      color: (listColor == null) ? Colors.transparent : listColor,
       child: InkWell(
         onTap: () {
           onTap();
         },
         child: Container(
           decoration: BoxDecoration(
-            color: (listColor == null) ? Colors.transparent : listColor,
             border: Border(
               bottom: BorderSide(
                 color: Theme.of(context).accentColor,

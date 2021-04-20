@@ -2,97 +2,143 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:phoso/components/custom_dialog.dart';
-import 'package:phoso/models/hex_color.dart';
 import 'package:phoso/models/photo_sound.dart';
 import 'package:phoso/screens/deleting.dart';
-import 'package:phoso/screens/edit_phoso.dart';
+import 'package:phoso/screens/form_playlist.dart';
 
-class PhosoCard extends StatelessWidget {
+class PhosoCard extends StatefulWidget {
   final Function onTap;
+  final Function onLongPress;
   final PhotoSound photoSound;
   final BuildContext globalContext;
+
+  // deleteTarget is for multiple PhosoCards delete at the same time
+  // if null the card is not in a 'deletable state'
+  // if false the card is 'deletable' but it is not a target
+  //if true the card is 'deletable' and it is a target
+  final bool deleteTarget;
+
+  static List<int> targets = [];
 
   PhosoCard({
     @required this.onTap,
     @required this.photoSound,
+    this.onLongPress,
     this.globalContext,
-  });
+    this.deleteTarget,
+  }) : assert(onTap != null && photoSound != null);
 
   @override
+  _PhosoCardState createState() => _PhosoCardState();
+}
+
+class _PhosoCardState extends State<PhosoCard> {
+  @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 0, 5, 10),
-      child: Container(
-        height: 70,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(
-            color: Theme.of(context).accentColor,
-            width: 0.7,
-          ),
+    return Container(
+      height: 70,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(
+          color: Theme.of(context).accentColor,
         ),
-        child: Material(
-          borderRadius: BorderRadius.circular(12),
-          color: Theme.of(context).backgroundColor,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(12),
-            onTap: () {
-              onTap();
-            },
-            onLongPress: () {
-              _openCardDialog(context: context);
-            },
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      margin: EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black,
-                            blurRadius: 5,
-                          ),
-                        ],
-                      ),
-                      child: Image.file(
-                        File(photoSound.photoSrc),
-                      ),
-                    ),
-                    Container(
-                      margin: EdgeInsets.only(left: 15),
-                      child: Text(
-                        photoSound.playlistName,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 20,
-                        ),
-                      ),
+      ),
+      child: Material(
+        borderRadius: BorderRadius.circular(6),
+        color: Theme.of(context).backgroundColor,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(6),
+          onTap: () {
+            setState(() {
+              widget.onTap();
+            });
+          },
+          onLongPress: () {
+            try {
+              widget.onLongPress();
+            } catch (e) {
+              print(e);
+            }
+          },
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                margin: EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: Theme.of(context).primaryColor,
+                      blurRadius: 5,
                     ),
                   ],
                 ),
-                Container(
-                  height: double.maxFinite,
-                  child: Material(
-                    borderRadius: BorderRadius.circular(100),
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(100),
-                      onTap: () {
-                        _openCardDialog(context: context);
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.all(15.0),
-                        child: Icon(Icons.settings),
-                      ),
+                width: 50,
+                child: Image.file(
+                  File(widget.photoSound.photoSrc),
+                ),
+              ),
+              Expanded(
+                child: Container(
+                  margin: EdgeInsets.only(left: 15),
+                  child: Text(
+                    widget.photoSound.playlistName,
+                    textAlign: TextAlign.start,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 20,
                     ),
                   ),
                 ),
-              ],
-            ),
+              ),
+              Container(
+                height: double.maxFinite,
+                child: Material(
+                  borderRadius: BorderRadius.circular(100),
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(100),
+                    onTap: () {
+                      if (this.widget.deleteTarget == null) {
+                        _openCardDialog(context: context);
+                      } else {
+                        setState(() {
+                          if (PhosoCard.targets.contains(this.widget.photoSound.id)) {
+                            PhosoCard.targets.remove(this.widget.photoSound.id);
+                          } else  {
+                            PhosoCard.targets.add(this.widget.photoSound.id);
+                          }
+                        });
+                      }
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(15.0),
+                      child: (this.widget.deleteTarget == null)
+                          ? Icon(Icons.more_vert)
+                          : Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: Theme.of(context).accentColor,
+                                ),
+                                borderRadius: BorderRadius.circular(100),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.only(right: 6.0, left: 6.0),
+                                child: Icon(
+                                  Icons.done,
+                                  color: (PhosoCard.targets
+                                          .contains(this.widget.photoSound.id))
+                                      ? Theme.of(context).iconTheme.color
+                                      : Colors.transparent,
+                                ),
+                              ),
+                            ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -101,25 +147,31 @@ class PhosoCard extends StatelessWidget {
 
   void _openCardDialog({@required BuildContext context}) {
     // using globalContext to avoid the "Looking to ancestor error" (related to dialog context)
-    context = (globalContext != null) ? globalContext : context;
+    context = (widget.globalContext != null) ? widget.globalContext : context;
 
     showDialog(
       context: context,
       builder: (dialogContext) => CustomDialog(
         dismissible: true,
-        title: photoSound.playlistName,
+        title: widget.photoSound.playlistName,
         contents: [
           _cardOptions(
             optName: 'Editar',
             optIcon: Icons.edit_outlined,
-            onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => EditPhoso(photoSound: photoSound))),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => FormPlaylist(
+                  formAction: FormAction.edit,
+                  photoSound: this.widget.photoSound,
+                ),
+              ),
+            ),
           ),
           _cardOptions(
             optName: 'Excluir',
             optIcon: Icons.delete_forever,
             onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => Deleting(idTarget: photoSound.id))),
+                builder: (context) => Deleting(idTarget: [widget.photoSound.id]))),
             tileColor: Colors.redAccent,
           )
         ],
