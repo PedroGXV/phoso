@@ -4,6 +4,8 @@ import io.flutter.embedding.android.FlutterActivity;
 import android.os.Bundle;
 import androidx.annotation.Nullable;
 import io.flutter.embedding.android.FlutterActivity;
+import android.view.ViewTreeObserver;
+import android.view.WindowManager;
 
 public class MainActivity extends FlutterActivity {
     @java.lang.Override

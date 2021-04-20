@@ -32,7 +32,11 @@ class _PhosoAppState extends State<PhosoApp> {
         builder: (context, snapshot) {
           switch (snapshot.connectionState) {
             case ConnectionState.none:
-              return Text('Erro ao inicializar. Contate o suporte.');
+              return MaterialApp(
+                home: Scaffold(
+                  body: Text('Erro ao inicializar. Contate o suporte.'),
+                ),
+              );
               break;
             case ConnectionState.waiting:
               return MaterialApp(
