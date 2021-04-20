@@ -4,7 +4,7 @@ import 'package:path/path.dart';
 
 class AppDatabase {
   static Future<Database> createDatabase() async {
-    final String path = join(await getDatabasesPath(), 'phoso.db');
+    String path = join(await getDatabasesPath(), 'phoso.db');
 
     return openDatabase(
       path,
@@ -12,7 +12,7 @@ class AppDatabase {
       onCreate: (db, version) {
         db.execute('CREATE TABLE photo_sound('
             'id INTEGER PRIMARY KEY AUTOINCREMENT , '
-            'playlistName TEXT, '
+            'playlistName VARCHAR(20), '
             'photoSrc TEXT, '
             'soundSrc TEXT, '
             'soundName TEXT)');
@@ -32,9 +32,13 @@ class AppDatabase {
     });
   }
 
-  static Future<List<PhotoSound>> findAll() {
+  static Future<List<PhotoSound>> findAll({String orderBy = 'id ASC'}) {
     return createDatabase().then((db) {
-      return db.query('photo_sound').then((maps) {
+      return db
+          .rawQuery(
+        'SELECT * FROM photo_sound ORDER BY $orderBy',
+      )
+          .then((maps) {
         final List<PhotoSound> photoSound = [];
         for (Map<String, dynamic> map in maps) {
           final PhotoSound phoso = PhotoSound(
@@ -52,14 +56,13 @@ class AppDatabase {
     });
   }
 
-  static Future<void> deleteDatabase() async {
-    return createDatabase().then((db) => deleteDatabase());
+  static Future<void> del() async {
+    return deleteDatabase(await getDatabasesPath());
   }
 
-  static Future<PhotoSound> getWhere(int id) {
+  static Future<PhotoSound> getWhereId(int id) {
     return createDatabase().then((db) {
-      return db.rawQuery("SELECT * FROM photo_sound WHERE id = ?", [id]).then(
-          (maps) {
+      return db.query("photo_sound", where: "id = ?", whereArgs: [id]).then((maps) {
         PhotoSound photoSound;
 
         maps.forEach((element) {
@@ -76,24 +79,71 @@ class AppDatabase {
     });
   }
 
+  static Future<List<PhotoSound>> getWherePlaylistNameLike(String playlistName) {
+    return createDatabase().then((db) {
+      return db.query(
+        "photo_sound",
+        where: 'playlistName LIKE ?',
+        whereArgs: ['$playlistName%'],
+      ).then((maps) {
+        final List<PhotoSound> photoSound = [];
+        for (Map<String, dynamic> map in maps) {
+          final PhotoSound phoso = PhotoSound(
+            id: map['id'],
+            playlistName: map['playlistName'],
+            photoSrc: map['photoSrc'],
+            soundSrc: map['soundSrc'],
+            soundName: map['soundName'],
+          );
+          PhotoSound.phoso.add(phoso);
+          photoSound.add(phoso);
+        }
+        return photoSound;
+      });
+    });
+  }
+
+  static Future<List<PhotoSound>> getWherePlaylistName(String playlistName) {
+    return createDatabase().then((db) {
+      return db.query(
+        "photo_sound",
+        where: 'playlistName = ?',
+        whereArgs: [playlistName],
+      ).then((maps) {
+        final List<PhotoSound> photoSound = [];
+        for (Map<String, dynamic> map in maps) {
+          final PhotoSound phoso = PhotoSound(
+            id: map['id'],
+            playlistName: map['playlistName'],
+            photoSrc: map['photoSrc'],
+            soundSrc: map['soundSrc'],
+            soundName: map['soundName'],
+          );
+          PhotoSound.phoso.add(phoso);
+          photoSound.add(phoso);
+        }
+        return photoSound;
+      });
+    });
+  }
+
   static Future<void> edit(PhotoSound photoSound) async {
     // O = OK
     // 1 = ERROR
-    return createDatabase()
-        .then(
-          (db) {
-            return db.rawQuery(
-              "UPDATE photo_sound SET playlistName = ?, photoSrc = ?, soundSrc = ?, soundName = ? WHERE id = ?",
-              [
-                photoSound.playlistName,
-                photoSound.photoSrc,
-                photoSound.soundSrc,
-                (photoSound.soundName == null) ? '' : photoSound.soundName,
-                photoSound.id
-              ],
-            );
-          },
+    return createDatabase().then(
+      (db) {
+        return db.rawQuery(
+          "UPDATE photo_sound SET playlistName = ?, photoSrc = ?, soundSrc = ?, soundName = ? WHERE id = ?",
+          [
+            photoSound.playlistName,
+            photoSound.photoSrc,
+            photoSound.soundSrc,
+            (photoSound.soundName == null) ? '' : photoSound.soundName,
+            photoSound.id
+          ],
         );
+      },
+    );
   }
 
   static Future<String> drop() async {
@@ -108,14 +158,12 @@ class AppDatabase {
     String where,
     List<dynamic> whereArgs,
   }) async {
-    return Future.delayed(Duration(seconds: 5), () {
-      return createDatabase().then((db) {
-        return db.delete(
-          'photo_sound',
-          where: where,
-          whereArgs: whereArgs,
-        );
-      });
+    return createDatabase().then((db) {
+      return db.delete(
+        'photo_sound',
+        where: where,
+        whereArgs: whereArgs,
+      );
     });
   }
 }

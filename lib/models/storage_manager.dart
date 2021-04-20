@@ -21,6 +21,7 @@ class StorageManager {
     return obj;
   }
 
+  // use this to delete a SharedPreference
   static Future<bool> deleteData(String key) async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.remove(key);

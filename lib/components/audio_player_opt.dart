@@ -2,36 +2,45 @@ import 'package:audioplayers/audio_cache.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:phoso/main.dart';
+import 'package:phoso/models/photo_sound.dart';
 
 enum PlayerState { stopped, playing, paused }
 
+// ignore: must_be_immutable
 class AudioPlayerOpt extends StatefulWidget {
-  final String soundSrc;
-  final String soundName;
+  final BuildContext globalContext;
 
+  // IMPORTANT: you need to pass photoSound or soundSrc && soundName
+  final PhotoSound photoSound;
+  String soundSrc;
+  String soundName;
   final BoxDecoration boxDecoration;
 
   AudioPlayerOpt({
-    @required this.soundSrc,
+    @required this.globalContext,
+    this.photoSound,
+    this.soundSrc,
     this.soundName,
     this.boxDecoration,
-  });
+  }) :assert(globalContext != null) {
+    // setting the soundSrc && soundName if only the photoSound is passed thorough constructor
+    if (soundSrc == null) {
+      soundSrc = photoSound.soundSrc;
+    }
+    if (soundName == null) {
+      soundName = photoSound.soundName;
+    }
+    if (photoSound == null && soundName == null && soundSrc == null) {
+      throw Exception(
+          'You need to pass photoSound or soundSrc && soundName to AudioPlayer constructor');
+    }
+  }
 
   @override
-  _AudioPlayerOptState createState() => _AudioPlayerOptState(
-        soundSrc: this.soundSrc,
-        soundName: this.soundName,
-        boxDecoration: this.boxDecoration,
-      );
+  _AudioPlayerOptState createState() => _AudioPlayerOptState();
 }
 
 class _AudioPlayerOptState extends State<AudioPlayerOpt> {
-  // The class wasn't getting the right Theme in some situations
-  // so I just picked the theme through the main file
-  ThemeData _theme;
-  String _themeMode;
-
   bool isPlaying = false;
 
   AudioPlayer _audioPlayer;
@@ -40,23 +49,13 @@ class _AudioPlayerOptState extends State<AudioPlayerOpt> {
   Duration position = new Duration();
   Duration musicLength = new Duration();
 
-  String soundSrc;
-  String soundName;
   String url;
-
-  BoxDecoration boxDecoration;
 
   PlayerState playerState = PlayerState.stopped;
 
-  _AudioPlayerOptState({
-    @required this.soundSrc,
-    this.soundName,
-    this.boxDecoration,
-  });
-
   Future playLocal() async {
     await _audioPlayer.play(
-      soundSrc,
+      widget.soundSrc,
       isLocal: true,
       stayAwake: true,
     );
@@ -88,10 +87,9 @@ class _AudioPlayerOptState extends State<AudioPlayerOpt> {
 
   @override
   void initState() {
-    cache = AudioCache(fixedPlayer: _audioPlayer);
-    cache.load(soundSrc);
-
     _audioPlayer = new AudioPlayer();
+
+    cache = AudioCache(fixedPlayer: _audioPlayer, prefix: '');
 
     _audioPlayer.onDurationChanged.listen((Duration d) {
       setState(() => musicLength = d);
@@ -101,41 +99,39 @@ class _AudioPlayerOptState extends State<AudioPlayerOpt> {
       setState(() => position = p);
     });
 
-    // load the song to make the playing faster
     super.initState();
   }
 
   @override
-  void setState(fn) {
-    _theme = PhosoApp.theme;
-    super.setState(fn);
+  Widget build(BuildContext context) {
+    setUrl(widget.soundSrc);
+
+    return _audioPlayerContainer();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    setUrl(soundSrc);
-    setState(() {});
-
-    return Material(
-      borderRadius: BorderRadius.circular(12.0),
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12.0),
-        onTap: () {},
+  Widget _audioPlayerContainer() {
+    return FutureBuilder(
+      future: cache.load(widget.soundSrc),
+      builder: (context, snapshot) => Padding(
+        padding: const EdgeInsets.only(top: 8.0),
         child: Container(
-          color: (boxDecoration == null) ? _theme.backgroundColor : null,
           width: MediaQuery.of(context).size.width,
-          decoration: (boxDecoration != null) ? boxDecoration : null,
           padding: EdgeInsets.all(12),
+          color: (widget.boxDecoration == null)
+              ? Theme.of(widget.globalContext).backgroundColor
+              : null,
+          decoration:
+              (widget.boxDecoration != null) ? widget.boxDecoration : null,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
-                '${(this.soundName != null) ? this.soundName : getNameThroughFilePath()}',
+                '${(widget.soundName.isNotEmpty) ? widget.soundName : getNameThroughFilePath()}',
+                overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: _theme.textTheme.bodyText1.color,
+                  color: Theme.of(widget.globalContext).textTheme.bodyText1.color,
                 ),
               ),
               Container(
@@ -159,9 +155,6 @@ class _AudioPlayerOptState extends State<AudioPlayerOpt> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   _buildAudioOpt(
-                    color: (_theme.primaryColor == Color(0xff000000))
-                        ? Colors.black
-                        : null,
                     onTap: (isPlaying)
                         ? () async {
                             setState(() {
@@ -197,18 +190,12 @@ class _AudioPlayerOptState extends State<AudioPlayerOpt> {
     );
   }
 
-  String getSec() {
-    if (musicLength.toString().length >= 3) {
-      return musicLength.toString().substring(0, 2);
-    }
-    return musicLength.toString();
-  }
-
   Widget _buildTimeText(firstTime, secondTime, thirdTime, fourthTime) {
     return Text(
-      '$firstTime:$secondTime/$thirdTime:$fourthTime',
+      // Using ternary op for handle the seconds length
+      '$firstTime:${(secondTime.toString().length == 1) ? '0$secondTime' : secondTime} / $thirdTime:${(fourthTime.toString().length == 1) ? '0$fourthTime' : fourthTime}',
       style: TextStyle(
-        color: _theme.textTheme.bodyText1.color,
+        color: Theme.of(widget.globalContext).textTheme.bodyText1.color,
       ),
     );
   }
@@ -225,7 +212,7 @@ class _AudioPlayerOptState extends State<AudioPlayerOpt> {
           borderRadius: BorderRadius.circular(12.0),
           boxShadow: [
             BoxShadow(
-              color: _theme.primaryColor,
+              color: Theme.of(widget.globalContext).primaryColor,
             ),
           ],
         ),
@@ -239,7 +226,9 @@ class _AudioPlayerOptState extends State<AudioPlayerOpt> {
             child: Icon(
               icon,
               size: 60,
-              color: (color != null) ? color : _theme.iconTheme.color,
+              color: (color != null)
+                  ? color
+                  : Theme.of(widget.globalContext).accentColor,
             ),
           ),
         ),
@@ -251,8 +240,9 @@ class _AudioPlayerOptState extends State<AudioPlayerOpt> {
     // the .adaptive display both CupertinoSlider and "Material" Slider
     // depending on the platform
     return Slider.adaptive(
-      activeColor: _theme.sliderTheme.activeTrackColor,
-      inactiveColor: _theme.sliderTheme.inactiveTrackColor,
+      activeColor: Theme.of(widget.globalContext).sliderTheme.activeTrackColor,
+      inactiveColor:
+          Theme.of(widget.globalContext).sliderTheme.inactiveTrackColor,
       value: position.inSeconds.toDouble(),
       min: 0,
       max: musicLength.inSeconds.toDouble(),
@@ -269,7 +259,7 @@ class _AudioPlayerOptState extends State<AudioPlayerOpt> {
 
   String getNameThroughFilePath() {
     // removing directory strings (data/storage..., etc.)
-    List<String> splitName = soundSrc.split('/');
+    List<String> splitName = widget.soundSrc.split('/');
     // removing the extension (.mp4, .mp3, etc.)
     List<String> splitExtension = splitName.last.split('.');
 
