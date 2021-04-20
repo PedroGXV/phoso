@@ -9,7 +9,6 @@ import 'form_playlist.dart';
 import 'package:phoso/database/app_database.dart';
 import 'package:phoso/screens/view_phoso.dart';
 import '../models/photo_sound.dart';
-import 'dart:math' as math;
 
 enum SortBy { none, alphabetAsc, alphabetDesc, recent, older }
 
