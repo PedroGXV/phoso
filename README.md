@@ -18,7 +18,7 @@ Lower Versions: Download and use the debug version
 ## Patches
  
 ---
-**0.6.1**
+**0.6.0**
 
 - Adicionado opção de "organizar por" na lista de Playlists
 - Mudanças nos designs de Home e FormPlaylist
