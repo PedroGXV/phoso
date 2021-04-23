@@ -25,6 +25,6 @@ Lower Versions: Download and use the debug version
 - Nova mecânica de excluir várias Playlists ao mesmo tempo (basta pressionar a playlist)
 - Várias mudanças no código, otimizado e melhorado
 - Adicionada Splash Screen
-- Tamanho da logo alterada (from 500px to 50px)
+- Tamanho da logo alterada (from 500px to 50px
 - Para patch notes mais antigos acesse a lista de [pull request](https://github.com/PedroGXV/phoso/pulls)
---- 
+---
