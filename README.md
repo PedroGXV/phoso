@@ -18,11 +18,12 @@ Lower Versions: Download and use the debug version
 ## Patches
  
 ---
-**0.5.0**
+**0.6.1**
 
-- New Edit Screen
-- Created more components widget
-- Changed the PhosoCard layout (just a bit)
+- Adicionado opção de organizar por na lista de Playlists
+- Mudanças nos designs de Home e FormPlaylist
+- Nova mecânica de excluir várias Playlists ao mesmo tempo (basta pressionar a playlist)
+- Várias mudanças no código, otimizado e melhorado
 - [To see the others patch notes choose another branch]
 --- 
 **Goals**
