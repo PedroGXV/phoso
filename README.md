@@ -26,7 +26,7 @@ Lower Versions: Download and use the debug version
 - Várias mudanças no código, otimizado e melhorado
 - Adicionada Splash Screen
 - Tamanho da logo alterada (from 500px to 50px)
-- Para patch notes mais antigos acesse a lista de [pull request]()
+- Para patch notes mais antigos acesse a lista de [pull request](https://github.com/PedroGXV/phoso/pulls?q=is%3Apr+is%3Aclosed)
 --- 
 **Goals**
 
