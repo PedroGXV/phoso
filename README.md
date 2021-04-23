@@ -8,8 +8,8 @@ This application uses some libraries to connection with database and audio playe
 
 ## Requirements
 
-. Android Version: 4.3 (SDK 18)
-. Lower Versions: Download and use the debug version
+- Android Version: 4.3 (SDK 18)
+- Lower Versions: Download and use the debug version
 
 ## Version
 
