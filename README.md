@@ -13,7 +13,7 @@ Lower Versions: Download and use the debug version
 
 ## Version
 
-**Current: 0.5.0**
+**Current: 0.6.0**
 
 ## Patches
  
@@ -24,6 +24,8 @@ Lower Versions: Download and use the debug version
 - Mudanças nos designs de Home e FormPlaylist
 - Nova mecânica de excluir várias Playlists ao mesmo tempo (basta pressionar a playlist)
 - Várias mudanças no código, otimizado e melhorado
+- Added Splash Screen
+- Changed logo size (from 500px to 50px)
 - [To see the others patch notes choose another branch]
 --- 
 **Goals**
