@@ -4,7 +4,11 @@
     <!-- Flutter needs it to communicate with the running application
          to allow setting breakpoints, to provide hot reload, etc.
     -->
-    <uses-sdk tools:overrideLibrary="xyz.luan.audioplayers"/>
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.WAVE_LOCK"/>
+    <uses-sdk tools:overrideLibrary="xyz.luan.audioplayers" />
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_INTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
+    <uses-permission android:name="android.permission.WAVE_LOCK" />
 </manifest>
