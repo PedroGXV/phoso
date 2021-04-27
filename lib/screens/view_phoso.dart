@@ -16,7 +16,7 @@ class ViewPhoso extends StatefulWidget {
   _ViewPhosoState createState() => _ViewPhosoState();
 }
 
-class _ViewPhosoState extends State<ViewPhoso> with TickerProviderStateMixin {
+class _ViewPhosoState extends State<ViewPhoso> {
   double _imageContainerHeight;
   double _imageContainerWidth;
   double _iconDegree = 0;

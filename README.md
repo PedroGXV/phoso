@@ -23,5 +23,6 @@ This application uses some libraries to connection with database and audio playe
 - Adicionado a mecânica de favoritos
 - Ajustado alguns designs
 - PhosoList modularizado
+
 - Para patch notes mais antigos acesse a lista de [pull request](https://github.com/PedroGXV/phoso/pulls)
 ---

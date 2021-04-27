@@ -4,6 +4,7 @@ class CustomField extends StatefulWidget {
   // globalContext is to get the correct theme
   final BuildContext globalContext;
   final Widget fieldWidgetLabel;
+
   final String fieldTagName;
   final Widget fieldWidget;
 
@@ -48,6 +49,7 @@ class _CustomFieldState extends State<CustomField> {
                 Padding(
                   padding: widget._allPadding,
                   child: widget.fieldWidgetLabel,
+
                 ),
                 Visibility(
                   visible: CustomField._containerOpen[widget.fieldTagName],
