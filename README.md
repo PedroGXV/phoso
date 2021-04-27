@@ -8,37 +8,23 @@ This application uses some libraries to connection with database and audio playe
 
 ## Requirements
 
-Android Version: 4.3 (SDK 18)
-Lower Versions: Download and use the debug version
+- Android Version: 4.3 (SDK 18)
+- Lower Versions: Download and use the debug version
 
 ## Version
 
-**Current: 0.3.1**
+**Current: 0.6.0**
 
 ## Patches
-
+ 
 ---
-**0.3.1**
+**0.6.0**
 
-- New home layout, transformed Grid layout to Vertical ListView
-- Changed Audio Player Buttons Layout (from Middle to Bottom)
-- Removed debug banner to improve people who will use it with older versions (like Android 4.1)
-- Improved Settings layout (with paddings)
+- Adicionado opção de "organizar por" na lista de Playlists
+- Mudanças nos designs de Home e FormPlaylist
+- Nova mecânica de excluir várias Playlists ao mesmo tempo (basta pressionar a playlist)
+- Várias mudanças no código, otimizado e melhorado
+- Adicionada Splash Screen
+- Tamanho da logo alterada (from 500px to 50px
+- Para patch notes mais antigos acesse a lista de [pull request](https://github.com/PedroGXV/phoso/pulls)
 ---
-**0.3.0**
-
-- New home layout (multiples floating buttons)
-- New 'Settings' screen
-- Added Shared Preferences for Dark Mode selection
-- Support to Android SDK 16
-
----
-**Goals**
-
-- Multi-language support (English / Portuguese-BR)
-- Better theme managment (with Theme Notifier)
----
-
-## Targets:
-
-. 

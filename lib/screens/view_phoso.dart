@@ -1,44 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:phoso/components/audio_player_opt.dart';
-import 'package:phoso/main.dart';
+import 'package:phoso/models/photo_sound.dart';
+import 'package:phoso/screens/form_playlist.dart';
 import 'dart:io';
+import 'dart:math' as Math;
+import 'package:flutter/services.dart';
 import 'package:photo_view/photo_view.dart';
 
 class ViewPhoso extends StatefulWidget {
-  String playlistName;
-  String photoSrc;
-  String soundSrc;
+  final PhotoSound photoSound;
 
-  ViewPhoso({
-    @required this.playlistName,
-    @required this.photoSrc,
-    @required this.soundSrc,
-  });
+  ViewPhoso({@required this.photoSound});
 
   @override
-  _ViewPhosoState createState() => _ViewPhosoState(
-        playlistName: this.playlistName,
-        photoSrc: this.photoSrc,
-        soundSrc: this.soundSrc,
-      );
+  _ViewPhosoState createState() => _ViewPhosoState();
 }
 
-class _ViewPhosoState extends State<ViewPhoso> {
-  String playlistName;
-  String photoSrc;
-  String soundSrc;
-
+class _ViewPhosoState extends State<ViewPhoso> with TickerProviderStateMixin {
   double _imageContainerHeight;
   double _imageContainerWidth;
+  double _iconDegree = 0;
 
   bool _rotate = true;
-  bool _nightMode = false;
+  bool _playerMinimized = false;
+  bool _appbarVisible = true;
 
-  _ViewPhosoState({
-    @required this.playlistName,
-    @required this.photoSrc,
-    @required this.soundSrc,
-  });
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,49 +36,73 @@ class _ViewPhosoState extends State<ViewPhoso> {
     _imageContainerWidth = MediaQuery.of(context).size.width - 200;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text((playlistName != null) ? playlistName : 'Playlist name'),
-        actions: [
-          Container(
-            width: 50,
-            height: double.maxFinite,
-            padding: const EdgeInsets.only(
-              right: 20,
-            ),
-            child: Material(
-              color: Theme.of(context).primaryColor,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  InkWell(
-                    borderRadius: BorderRadius.all(
-                      Radius.circular(100.0),
-                    ),
-                    onTap: () {
-                      setState(() {
-                        _rotate = !_rotate;
-                      });
-                    },
-                    child: Icon(
-                      Icons.crop_rotate_outlined,
-                      color: (_rotate) ? Colors.green : Colors.red,
+      appBar: (_appbarVisible)
+          ? AppBar(
+              title: Text(
+                (widget.photoSound.playlistName != null) ? widget.photoSound.playlistName : 'Playlist name',
+              ),
+              actions: [
+                Container(
+                  width: 60,
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 10.0),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () {
+                          setState(() {
+                            _rotate = !_rotate;
+                          });
+                        },
+                        child: Icon(
+                          Icons.crop_rotate_outlined,
+                          color: (_rotate) ? Colors.green : Colors.red,
+                        ),
+                      ),
                     ),
                   ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-      body: Container(
-        color: (PhosoApp.darkMode) ? Colors.black : Colors.white,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            Container(
-              height: MediaQuery.of(context).size.height - 300,
-              width: MediaQuery.of(context).size.width,
+                ),
+                Container(
+                  width: 60,
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 10.0),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => FormPlaylist(
+                                formAction: FormAction.edit,
+                                photoSound: widget.photoSound,
+                              ),
+                            ),
+                          );
+                        },
+                        child: Icon(Icons.edit_outlined),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            )
+          : null,
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          Expanded(
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  _appbarVisible = !_appbarVisible;
+                  if (_appbarVisible) {
+                    SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
+                  } else {
+                    SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.bottom]);
+                  }
+                });
+              },
               child: PhotoView(
                 customSize: Size(
                   _imageContainerWidth,
@@ -96,32 +110,66 @@ class _ViewPhosoState extends State<ViewPhoso> {
                 ),
                 enableRotation: _rotate,
                 backgroundDecoration: BoxDecoration(
-                  color: (PhosoApp.darkMode) ? Colors.black : Colors.white,
+                  color: Theme.of(context).backgroundColor,
                   border: Border.all(
                     width: 2,
-                    color: (PhosoApp.darkMode) ? Colors.white : Colors.black,
+                    color: Theme.of(context).accentColor,
                   ),
                 ),
                 imageProvider: FileImage(
-                  File(photoSrc),
+                  File(widget.photoSound.photoSrc),
                 ),
                 minScale: PhotoViewComputedScale.contained * 2,
                 maxScale: PhotoViewComputedScale.contained * 4,
-                initialScale: PhotoViewComputedScale.contained * 2,
+                initialScale: PhotoViewComputedScale.contained,
               ),
             ),
-            SizedBox(
-              height: 20,
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 0),
+            child: Column(
+              children: [
+                Material(
+                  color: Theme.of(context).primaryColor,
+                  child: InkWell(
+                    onTap: () {
+                      setState(() {
+                        _playerMinimized = !_playerMinimized;
+                        _iconDegree = (_playerMinimized) ? Math.pi : 0;
+                      });
+                    },
+                    child: Container(
+                      width: double.maxFinite,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              (_playerMinimized) ? 'Expandir'.toUpperCase() : 'Esconder'.toUpperCase(),
+                            ),
+                            Transform.rotate(
+                              child: Icon(Icons.arrow_drop_down),
+                              angle: _iconDegree,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Container(
+                  alignment: Alignment.bottomCenter,
+                  child: AudioPlayerOpt(
+                    globalContext: context,
+                    visibile: !_playerMinimized,
+                    photoSound: widget.photoSound,
+                  ),
+                ),
+              ],
             ),
-            Container(
-              alignment: Alignment.bottomCenter,
-              padding: EdgeInsets.all(5),
-              child: AudioPlayerOpt(
-                soundSrc: soundSrc,
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

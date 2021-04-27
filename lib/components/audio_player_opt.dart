@@ -1,251 +1,44 @@
-import 'package:audioplayers/audio_cache.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:phoso/main.dart';
+import 'package:phoso/models/photo_sound.dart';
 
 enum PlayerState { stopped, playing, paused }
 
+// ignore: must_be_immutable
 class AudioPlayerOpt extends StatefulWidget {
+  final BuildContext globalContext;
+
+  // IMPORTANT: you need to pass photoSound or soundSrc && soundName
+  final PhotoSound photoSound;
   String soundSrc;
   String soundName;
-
-  BoxDecoration boxDecoration;
+  final BoxDecoration boxDecoration;
+  final bool visibile;
 
   AudioPlayerOpt({
-    @required this.soundSrc,
+    @required this.globalContext,
+    this.photoSound,
+    this.soundSrc,
     this.soundName,
     this.boxDecoration,
-  });
-
-  @override
-  _AudioPlayerOptState createState() => _AudioPlayerOptState(
-        soundSrc: this.soundSrc,
-        soundName: this.soundName,
-        boxDecoration: this.boxDecoration,
-      );
-}
-
-class _AudioPlayerOptState extends State<AudioPlayerOpt> {
-  bool isPlaying = false;
-
-  AudioPlayer _audioPlayer;
-  AudioCache cache;
-
-  Duration position = new Duration();
-  Duration musicLength = new Duration();
-
-  String soundSrc;
-  String soundName;
-  String url;
-
-  BoxDecoration boxDecoration;
-
-  PlayerState playerState = PlayerState.stopped;
-
-  _AudioPlayerOptState({
-    @required this.soundSrc,
-    this.soundName,
-    this.boxDecoration,
-  });
-
-  Future playLocal() async {
-    await _audioPlayer.play(
-      soundSrc,
-      isLocal: true,
-      stayAwake: true,
-    );
-    setState(() => playerState = PlayerState.playing);
-  }
-
-  Future pause() async {
-    await _audioPlayer.pause();
-    setState(() {
-      playerState = PlayerState.paused;
-    });
-  }
-
-  Future stop() async {
-    await _audioPlayer.stop();
-    setState(() {
-      playerState = PlayerState.stopped;
-      _audioPlayer.seek(Duration(seconds: 0));
-    });
-  }
-
-  Future setUrl(String url) async {
-    await _audioPlayer.setUrl(
-      url,
-      isLocal: true,
-      respectSilence: true,
-    );
-  }
-
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    _audioPlayer = new AudioPlayer();
-    cache = AudioCache(fixedPlayer: _audioPlayer);
-
-    _audioPlayer.onDurationChanged.listen((Duration d) {
-      setState(() => musicLength = d);
-    });
-
-    _audioPlayer.onAudioPositionChanged.listen((Duration p) {
-      setState(() {
-        position = p;
-      });
-    });
-
-    // load the song to make the playing faster
-    cache.load(soundSrc);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    setUrl(soundSrc);
-
-    return Material(
-      color: (PhosoApp.darkMode) ? Colors.black : Colors.white,
-      child: InkWell(
-        onTap: () {},
-        child: Container(
-          width: MediaQuery.of(context).size.width,
-          decoration: (boxDecoration != null) ? boxDecoration : null,
-          padding: EdgeInsets.all(12),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
-                '${(this.soundName != null) ? this.soundName : getNameThroughFilePath()}',
-                style: TextStyle(
-                  color: (PhosoApp.darkMode) ? Colors.white : Colors.black,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(
-                height: 10,
-              ),
-              Container(
-                width: 500,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _buildTimeText('${position.inMinutes}',
-                        '${position.inSeconds.remainder(60)}'),
-                    slider(),
-                    _buildTimeText('${musicLength.inMinutes}',
-                        '${musicLength.inSeconds.remainder(60)}'),
-                  ],
-                ),
-              ),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _buildAudioOpt(
-                    onTap: (isPlaying)
-                        ? () async {
-                      await pause();
-                      setState(() {
-                        isPlaying = false;
-                      });
-                    }
-                        : () async {
-                      await playLocal();
-                      setState(() {
-                        isPlaying = true;
-                      });
-                    },
-                    icon: (isPlaying)
-                        ? Icons.pause
-                        : Icons.play_arrow,
-                    color: (PhosoApp.darkMode) ? Colors.white : Colors.black,
-                  ),
-                  _buildAudioOpt(
-                    color: Colors.redAccent,
-                    icon: Icons.stop,
-                    onTap: () async {
-                      await stop();
-                      setState(() {
-                        isPlaying = false;
-                      });
-                    },
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  String getSec() {
-    if (musicLength.toString().length >= 3) {
-      return musicLength.toString().substring(0, 2);
+    this.visibile = true,
+  }) : assert(globalContext != null) {
+    // setting the soundSrc && soundName if only the photoSound is passed thorough constructor
+    if (soundSrc == null) {
+      soundSrc = photoSound.soundSrc;
     }
-    return musicLength.toString();
+    if (soundName == null) {
+      soundName = photoSound.soundName;
+    }
+    if (photoSound == null && soundName == null && soundSrc == null) {
+      throw Exception('You need to pass photoSound or soundSrc && soundName to AudioPlayer constructor');
+    }
   }
 
-  Widget _buildTimeText(firstTime, secondTime) {
-    return Text(
-      '$firstTime:$secondTime',
-      style: TextStyle(
-        color: (PhosoApp.darkMode) ? Colors.white : Colors.black,
-      ),
-    );
-  }
-
-  Widget _buildAudioOpt({
-    @required IconData icon,
-    @required Function onTap,
-    Color color,
-  }) {
-    return GestureDetector(
-      onTap: () {
-        onTap();
-      },
-      child: Padding(
-        padding: const EdgeInsets.only(left: 2.0, right: 2.0),
-        child: Icon(
-          icon,
-          color: (color != null) ? color : Colors.black,
-          size: 60,
-        ),
-      ),
-    );
-  }
-
-  Widget slider() {
-    return Column(
-      mainAxisSize: MainAxisSize.max,
-      children: [
-        Slider.adaptive(
-          activeColor: Colors.deepPurple,
-          inactiveColor: (PhosoApp.darkMode) ? Colors.white60 : Colors.black26,
-          value: position.inSeconds.toDouble(),
-          min: 0,
-          max: musicLength.inSeconds.toDouble(),
-          onChanged: (value) async {
-            seekToSec(value.toInt());
-          },
-        ),
-      ],
-    );
-  }
-
-  void seekToSec(int sec) {
-    Duration newPos = new Duration(seconds: sec);
-    _audioPlayer.seek(newPos);
-  }
-
-  String getNameThroughFilePath() {
+  static String getNameThroughFilePath(String path) {
     // removing directory strings (data/storage..., etc.)
-    List<String> splitName = soundSrc.split('/');
+    List<String> splitName = path.split('/');
     // removing the extension (.mp4, .mp3, etc.)
     List<String> splitExtension = splitName.last.split('.');
 
@@ -259,5 +52,222 @@ class _AudioPlayerOptState extends State<AudioPlayerOpt> {
     });
 
     return (finalName != null) ? finalName : 'Nome padrão';
+  }
+
+  @override
+  _AudioPlayerOptState createState() => _AudioPlayerOptState();
+}
+
+class _AudioPlayerOptState extends State<AudioPlayerOpt> {
+  AudioPlayer _audioPlayer = new AudioPlayer();
+
+  Duration position = new Duration();
+  Duration musicLength = new Duration();
+
+  String url;
+
+  PlayerState playerState = PlayerState.stopped;
+
+  @override
+  void initState() {
+
+    // initializing the music length
+    _audioPlayer.play(widget.soundSrc).then((value) => _audioPlayer.stop());
+
+    _audioPlayer.onDurationChanged.listen((Duration d) {
+      setState(() => musicLength = d);
+    });
+
+    _audioPlayer.onAudioPositionChanged.listen((Duration p) {
+      setState(() {
+        if (position == musicLength) {
+          position = Duration(seconds: 0);
+          playerState = PlayerState.paused;
+        } else {
+          position = p;
+        }
+      });
+    });
+
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _audioPlayer.stop();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Visibility(
+      visible: widget.visibile,
+      child: _audioPlayerContainer(),
+    );
+  }
+
+  Widget _audioPlayerContainer() {
+    return Container(
+      width: MediaQuery
+          .of(context)
+          .size
+          .width,
+      padding: EdgeInsets.all(12),
+      color: (widget.boxDecoration == null) ? Theme
+          .of(widget.globalContext)
+          .backgroundColor : null,
+      decoration: (widget.boxDecoration != null) ? widget.boxDecoration : null,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(
+            '${(widget.soundName.isNotEmpty) ? widget.soundName : AudioPlayerOpt.getNameThroughFilePath(
+                widget.soundSrc)}',
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Theme
+                  .of(widget.globalContext)
+                  .textTheme
+                  .bodyText1
+                  .color,
+            ),
+          ),
+          Container(
+            width: 500,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                slider(),
+                _buildTimeText('${position.inMinutes}', '${position.inSeconds.remainder(60)}',
+                    '${musicLength.inMinutes}', '${musicLength.inSeconds.remainder(60)}'),
+              ],
+            ),
+          ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildAudioOpt(
+                onTap: (playerState == PlayerState.playing)
+                    ? () async {
+                  await _audioPlayer.pause();
+                  setState(() {
+                    playerState = PlayerState.paused;
+                  });
+                }
+                    : () async {
+                  await _audioPlayer.play(
+                    widget.soundSrc,
+                    isLocal: true,
+                    stayAwake: true,
+                    position: position,
+                  );
+                  setState(() {
+                    playerState = PlayerState.playing;
+                  });
+                },
+                icon: (playerState == PlayerState.playing) ? Icons.pause : Icons.play_arrow,
+              ),
+              _buildAudioOpt(
+                color: Colors.redAccent,
+                icon: Icons.stop,
+                onTap: () async {
+                  await _audioPlayer.stop();
+                  setState(() {
+                    playerState = PlayerState.stopped;
+                  });
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTimeText(firstTime, secondTime, thirdTime, fourthTime) {
+    return Text(
+      // Using ternary op for handle the seconds length
+      '$firstTime:${(secondTime
+          .toString()
+          .length == 1) ? '0$secondTime' : secondTime} / $thirdTime:${(fourthTime
+          .toString()
+          .length == 1) ? '0$fourthTime' : fourthTime}',
+      style: TextStyle(
+        color: Theme
+            .of(widget.globalContext)
+            .textTheme
+            .bodyText1
+            .color,
+      ),
+    );
+  }
+
+  Widget _buildAudioOpt({
+    @required IconData icon,
+    @required Function onTap,
+    Color color,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 2.0, right: 2.0, top: 10.0),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12.0),
+          boxShadow: [
+            BoxShadow(
+              color: Theme
+                  .of(widget.globalContext)
+                  .primaryColor,
+            ),
+          ],
+        ),
+        child: Material(
+          borderRadius: BorderRadius.circular(12.0),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12.0),
+            onTap: () {
+              onTap();
+            },
+            child: Icon(
+              icon,
+              size: 60,
+              color: (color != null) ? color : Theme
+                  .of(widget.globalContext)
+                  .accentColor,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget slider() {
+    // the .adaptive display both CupertinoSlider and "Material" Slider
+    // depending on the platform
+    return Slider.adaptive(
+      activeColor: Theme
+          .of(widget.globalContext)
+          .sliderTheme
+          .activeTrackColor,
+      inactiveColor: Theme
+          .of(widget.globalContext)
+          .sliderTheme
+          .inactiveTrackColor,
+      value: position.inSeconds.toDouble(),
+      min: 0,
+      max: musicLength.inSeconds.toDouble(),
+      onChanged: (value) async {
+        seekToSec(value.toInt());
+      },
+    );
+  }
+
+  void seekToSec(int sec) {
+    Duration newPos = new Duration(seconds: sec);
+    _audioPlayer.seek(newPos);
   }
 }

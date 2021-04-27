@@ -8,6 +8,7 @@ class PhotoSound {
   String photoSrc;
   String soundSrc;
   String soundName;
+  bool favorite;
 
   PhotoSound({
     @required this.id,
@@ -15,5 +16,6 @@ class PhotoSound {
     @required this.photoSrc,
     @required this.soundSrc,
     this.soundName,
+    this.favorite = false,
   });
 }

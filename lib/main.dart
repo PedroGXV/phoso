@@ -1,51 +1,90 @@
 import 'package:flutter/material.dart';
+import 'package:package_info/package_info.dart';
+import 'package:phoso/components/loading.dart';
+import 'package:phoso/database/app_database.dart';
+import 'package:phoso/models/theme_notifier.dart';
 import 'package:phoso/screens/home.dart';
-import 'models/hex_color.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:provider/provider.dart';
 
 void main() {
   runApp(
-    PhosoApp(
-      title: 'Phoso App',
+    ChangeNotifierProvider(
+      create: (_) => new ThemeNotifier(),
+      child: PhosoApp(),
     ),
   );
 }
 
-class PhosoApp extends StatelessWidget {
-  PhosoApp({Key key, this.title}) : super(key: key);
+class PhosoApp extends StatefulWidget {
+  static ThemeData theme;
+  static ThemeNotifier themeNotifier = new ThemeNotifier();
+  static String version;
 
-  final String title;
-  static bool darkMode = false;
-  static bool editCard = false;
-  static int editTarget;
+  @override
+  _PhosoAppState createState() => _PhosoAppState();
+}
+
+class _PhosoAppState extends State<PhosoApp> {
+  AppDatabase db = new AppDatabase();
 
   @override
   Widget build(BuildContext context) {
-    initPrefs();
+    return FutureBuilder<PackageInfo>(
+        future: PackageInfo.fromPlatform(),
+        initialData: null,
+        builder: (context, snapshot) {
+          switch (snapshot.connectionState) {
+            case ConnectionState.none:
+              return MaterialApp(
+                home: Scaffold(
+                  body: Text('Erro ao inicializar. Contate o suporte.'),
+                ),
+              );
+              break;
+            case ConnectionState.waiting:
+              return MaterialApp(
+                home: Scaffold(
+                  body: Loading(),
+                ),
+              );
+              break;
+            case ConnectionState.active:
+              // TODO: Handle this case.
+              break;
+            case ConnectionState.done:
+              if (snapshot.data != null) {
+                PhosoApp.version = snapshot.data.version;
+                return Consumer<ThemeNotifier>(
+                  builder: (context, theme, child) {
+                    PhosoApp.theme = theme.getTheme();
+                    PhosoApp.themeNotifier = theme;
 
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        accentColor: HexColor.fromHex("#FF8067D0"),
-        primaryColor: Colors.deepPurple,
-        backgroundColor: Colors.white,
-        buttonColor: HexColor.fromHex("#FF3C0095"),
-      ),
-      home: Home(),
-    );
-  }
-
-  void initPrefs() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    if (prefs.getBool('darkMode') != null) {
-      darkMode = prefs.getBool('darkMode');
-    } else {
-      prefs.setBool('darkMode', darkMode);
-    }
-    
-    print(prefs.getBool('darkMode'));
-    
+                    return MaterialApp(
+                      debugShowCheckedModeBanner: false,
+                      theme: theme.getTheme(),
+                      home: Home(),
+                    );
+                  },
+                );
+              }
+              return MaterialApp(
+                home: Scaffold(
+                  body: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text('PackageInfo could not be gotten. Contact the support.')
+                    ],
+                  ),
+                ),
+              );
+              break;
+          }
+          return MaterialApp(
+            home: Scaffold(
+              body: SizedBox(),
+            ),
+          );
+        });
   }
 }
