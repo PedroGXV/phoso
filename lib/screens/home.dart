@@ -6,6 +6,8 @@ import 'package:phoso/screens/settings.dart';
 import 'form_playlist.dart';
 import 'package:phoso/database/app_database.dart';
 
+enum SortBy { none, alphabetAsc, alphabetDesc, recent, older }
+
 class Home extends StatefulWidget {
   @override
   _HomeState createState() => _HomeState();

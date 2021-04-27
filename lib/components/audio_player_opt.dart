@@ -16,6 +16,7 @@ class AudioPlayerOpt extends StatefulWidget {
   final BoxDecoration boxDecoration;
   final bool visibile;
 
+
   AudioPlayerOpt({
     @required this.globalContext,
     this.photoSound,
@@ -24,6 +25,7 @@ class AudioPlayerOpt extends StatefulWidget {
     this.boxDecoration,
     this.visibile = true,
   }) : assert(globalContext != null) {
+
     // setting the soundSrc && soundName if only the photoSound is passed thorough constructor
     if (soundSrc == null) {
       soundSrc = photoSound.soundSrc;
@@ -54,6 +56,7 @@ class AudioPlayerOpt extends StatefulWidget {
     return (finalName != null) ? finalName : 'Nome padrão';
   }
 
+
   @override
   _AudioPlayerOptState createState() => _AudioPlayerOptState();
 }
@@ -73,6 +76,7 @@ class _AudioPlayerOptState extends State<AudioPlayerOpt> {
 
     // initializing the music length
     _audioPlayer.play(widget.soundSrc).then((value) => _audioPlayer.stop());
+
 
     _audioPlayer.onDurationChanged.listen((Duration d) {
       setState(() => musicLength = d);
@@ -96,6 +100,7 @@ class _AudioPlayerOptState extends State<AudioPlayerOpt> {
   void dispose() {
     _audioPlayer.stop();
     super.dispose();
+
   }
 
   @override
@@ -203,6 +208,7 @@ class _AudioPlayerOptState extends State<AudioPlayerOpt> {
             .textTheme
             .bodyText1
             .color,
+
       ),
     );
   }

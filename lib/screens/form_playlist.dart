@@ -56,7 +56,6 @@ class _FormPlaylistState extends State<FormPlaylist> {
   @override
   void initState() {
     audioPlayer = AudioPicker();
-
     // if already exist a audio, image, text value initialize it
     if (widget.formAction == FormAction.edit) {
       _fieldValue.addAll(
@@ -237,6 +236,7 @@ class _FormPlaylistState extends State<FormPlaylist> {
             soundSrc: this._fieldValue[FieldType.audio],
             photoSrc: this._fieldValue[FieldType.image],
             soundName: (_audioName == null || _audioName.isEmpty) ? '' : _audioName,
+
             favorite: _favorite,
           ),
         )
@@ -258,6 +258,7 @@ class _FormPlaylistState extends State<FormPlaylist> {
 
         return true;
       } else if (widget.formAction == FormAction.edit) {
+
         await db
             .edit(
           PhotoSound(
