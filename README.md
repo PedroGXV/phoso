@@ -1,4 +1,4 @@
-# phoso
+# PhoSo
 
 A new application to make playlists of photo and sound.
 
@@ -13,18 +13,15 @@ This application uses some libraries to connection with database and audio playe
 
 ## Version
 
-**Current: 0.6.0**
+**Current: 0.7.0**
 
 ## Patches
  
 ---
-**0.6.0**
+**0.7.0**
 
-- Adicionado opção de "organizar por" na lista de Playlists
-- Mudanças nos designs de Home e FormPlaylist
-- Nova mecânica de excluir várias Playlists ao mesmo tempo (basta pressionar a playlist)
-- Várias mudanças no código, otimizado e melhorado
-- Adicionada Splash Screen
-- Tamanho da logo alterada (from 500px to 50px
+- Adicionado a mecânica de favoritos
+- Ajustado alguns designs
+- PhosoList modularizado
 - Para patch notes mais antigos acesse a lista de [pull request](https://github.com/PedroGXV/phoso/pulls)
 ---
