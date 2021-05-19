@@ -1,6 +1,6 @@
 ## Supported Versions
 
-- Only the last version o PhoSo is supported (you can find it on the master branch pubspec.yaml file)
+- Only the last version o PhoSo is supported (find it here: github.com/PedroGXV/PhoSo#version)
 
 ## Reporting a Vulnerability
 
