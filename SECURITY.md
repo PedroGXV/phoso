@@ -1,6 +1,6 @@
 ## Supported Versions
 
-- Only the last version o PhoSo is supported (find it here: github.com/PedroGXV/PhoSo#version)
+- Only the last version o PhoSo is supported (find it here: https://github.com/PedroGXV/PhoSo#version)
 
 ## Reporting a Vulnerability
 
